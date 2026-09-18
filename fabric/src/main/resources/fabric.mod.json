@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "net.tearpelato.craftcorelib.Craftcorelib"
+    ],
+    "client": [
+      "net.tearpelato.craftcorelib.CraftCoreLibClient"
     ]
   },
   "mixins": [
