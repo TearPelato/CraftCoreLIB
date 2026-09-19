@@ -2,14 +2,23 @@ package net.tearpelato.craftcorelib;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
 
 @EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
 public class CraftCoreLIBClient {
 
+    public CraftCoreLIBClient(ModContainer container) {
+        if(!ModList.get().isLoaded("configured")) {
+            container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        }
+    }
 
     @SubscribeEvent
     public static void onContainerInit(ScreenEvent.Init.Post event) {

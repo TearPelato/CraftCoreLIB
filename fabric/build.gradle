@@ -2,6 +2,18 @@ plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
 }
+
+repositories {
+    repositories {
+        maven {
+            url "https://cursemaven.com"
+            content {
+                includeGroup "curse.maven"
+            }
+        }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -10,6 +22,16 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modImplementation "curse.maven:configured-457570:7276575"
+    modImplementation "curse.maven:menulogue-682371:5705587"
+    modImplementation "curse.maven:catalogue-459701:6926812"
+
+    implementation "com.electronwill.night-config:core:3.6.7"
+    implementation "com.electronwill.night-config:toml:3.6.7"
+
+    include "com.electronwill.night-config:core:3.6.7"
+    include "com.electronwill.night-config:toml:3.6.7"
+
 }
 
 loom {
