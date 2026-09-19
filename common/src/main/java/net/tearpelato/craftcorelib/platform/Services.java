@@ -2,6 +2,7 @@ package net.tearpelato.craftcorelib.platform;
 
 import net.tearpelato.craftcorelib.Constants;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
+import net.tearpelato.craftcorelib.platform.services.IFluidItemHelper;
 import net.tearpelato.craftcorelib.platform.services.IPlatformHelper;
 
 import java.util.ServiceLoader;
