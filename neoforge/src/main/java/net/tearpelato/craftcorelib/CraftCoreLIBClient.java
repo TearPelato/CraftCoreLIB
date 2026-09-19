@@ -11,7 +11,6 @@ import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
 public class CraftCoreLIBClient {
 
 
-
     @SubscribeEvent
     public static void onContainerInit(ScreenEvent.Init.Post event) {
         ScreenRenderEvent.INIT.post().init(event.getScreen());
