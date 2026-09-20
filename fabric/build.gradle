@@ -12,6 +12,10 @@ repositories {
             }
         }
     }
+    maven {
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
+    }
 }
 
 dependencies {
@@ -28,10 +32,11 @@ dependencies {
 
     implementation "com.electronwill.night-config:core:3.6.7"
     implementation "com.electronwill.night-config:toml:3.6.7"
-
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
+    //modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
+    modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
 }
 
 loom {

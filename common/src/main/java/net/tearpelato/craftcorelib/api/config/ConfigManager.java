@@ -2,10 +2,7 @@ package net.tearpelato.craftcorelib.api.config;
 
 import net.tearpelato.craftcorelib.platform.Services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConfigManager {
 
@@ -20,5 +17,9 @@ public class ConfigManager {
 
     public static List<ConfigCategory> getCategories(String modId) {
         return REGISTERED.getOrDefault(modId, List.of());
+    }
+
+    public static Set<String> getRegisteredModIds() {
+        return REGISTERED.keySet();
     }
 }

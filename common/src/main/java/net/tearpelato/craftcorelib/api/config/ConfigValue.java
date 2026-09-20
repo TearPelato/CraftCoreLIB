@@ -8,6 +8,7 @@ public class ConfigValue<T> {
     private final String key;
     private final T defaultValue;
     private final ConfigCategory parent;
+    private String nameKey;
     private String commentKey;
     private T min, max;
     private Supplier<T> getter;
@@ -17,6 +18,11 @@ public class ConfigValue<T> {
         this.parent = parent;
         this.key = key;
         this.defaultValue = defaultValue;
+    }
+
+    public ConfigValue<T> name(String translationKey) {
+        this.nameKey = translationKey;
+        return this;
     }
 
     public ConfigValue<T> comment(String translationKey) {
@@ -47,6 +53,10 @@ public class ConfigValue<T> {
         return key;
     }
 
+    public String getNameKey() {
+        return nameKey;
+    }
+
     public T getDefault() {
         return defaultValue;
     }
@@ -61,5 +71,9 @@ public class ConfigValue<T> {
 
     public T getMax() {
         return max;
+    }
+
+    public ConfigCategory getParent() {
+        return parent;
     }
 }

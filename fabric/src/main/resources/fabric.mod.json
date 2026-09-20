@@ -20,6 +20,9 @@
     ],
     "client": [
       "net.tearpelato.craftcorelib.CraftCoreLibClient"
+    ],
+    "modmenu": [
+      "net.tearpelato.craftcorelib.compat.ModMenuIntegration"
     ]
   },
   "mixins": [

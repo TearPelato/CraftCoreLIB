@@ -122,7 +122,7 @@ public class ObjectRegistries<T> {
         return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier);
     }
 
-    public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry,ResourceLocation id, Supplier<T> supplier){
+    public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier){
         return new ObjectRegistries<>(registry, id, supplier);
     }
 

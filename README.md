@@ -23,8 +23,31 @@ and many more registries covering menus, blockentities creativetabs and more!!
 Dedicated Config System built in to work perfectly on cross-platform:
 - Translatable Configs -> Configs can be translated in all the languages you want
 - Allow Strings, Ints, Boolean, Enum and more
+- Built-In config screen for fabric
 
-## Render Utils: Fluid
- - Fluid Container creation
- - Fluid Render
- - Fluid Interactions
+How To use:
+
+```
+public class ModConfig {
+
+    public static final ConfigCategory MY_COOL_CATEGORY = ConfigCategory.create("my_cool_category")
+            .title("my_cool_category");
+
+
+    public static final ConfigValue<Boolean> MY_CONDITION = MY_COOL_CATEGORY
+            .define("my_condition", false)
+            //Translatable Name -> define the name inside your localisation default en_su.json
+            .name("config.mymodid.mycondition")
+            //Translatable Description -> define the description inside your localisation default en_su.json
+            .comment("config.mymodid.mycondition.dec");
+
+    // Accept countless categories
+    public static void init() {
+        ConfigManager.register("mymodid", MY_COOL_CATEGORY);
+    }
+}
+
+
+```
+
+## And much more coming soon!!
