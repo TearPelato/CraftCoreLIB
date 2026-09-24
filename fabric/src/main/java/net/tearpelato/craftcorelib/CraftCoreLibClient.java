@@ -4,6 +4,8 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
+import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
+import net.tearpelato.craftcorelib.network.FabricNetworkRegistrar;
 
 public class CraftCoreLibClient implements ClientModInitializer {
 
@@ -28,5 +30,7 @@ public class CraftCoreLibClient implements ClientModInitializer {
                 ScreenRenderEvent.ON_CLOSE.post().close(closedScreen);
             });
         });
+
+        NetworkBuilder.flush(new FabricNetworkRegistrar());
     }
 }

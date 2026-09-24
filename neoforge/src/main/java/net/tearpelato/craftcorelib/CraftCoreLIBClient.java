@@ -9,7 +9,10 @@ import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
+import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
+import net.tearpelato.craftcorelib.network.NeoForgeNetworkRegistrar;
 
 @EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
 public class CraftCoreLIBClient {
@@ -39,5 +42,12 @@ public class CraftCoreLIBClient {
     public static void onScroll(ScreenEvent.MouseScrolled.Pre event) {
         ScreenRenderEvent.SCROLL.post().onScroll(event.getMouseX(), event.getMouseY(),event.getScrollDeltaY());
     }
+
+    @SubscribeEvent
+    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        var registrar = new NeoForgeNetworkRegistrar(event.registrar(NetworkBuilder.NETWORK_VERSION));
+        NetworkBuilder.flush(registrar);
+    }
+
 
 }

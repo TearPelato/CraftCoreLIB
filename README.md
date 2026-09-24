@@ -49,5 +49,10 @@ public class ModConfig {
 
 
 ```
+## Built-In Network builder
+- Network Creation
+- Network Registration
+- Custom Packet handling
+
 
 ## And much more coming soon!!
