@@ -1,6 +1,7 @@
 package net.tearpelato.craftcorelib.api.registry;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ObjectRegistries<T> {
@@ -108,6 +108,9 @@ public class ObjectRegistries<T> {
         return new ObjectRegistries<>(registry, id, supplier);
     }
 
+    public static <T extends DataComponentType<?>> ObjectRegistries<T> registerEnchantmentEffect(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, id, supplier);
+    }
 
 
 
