@@ -55,24 +55,6 @@ public class ObjectRegistries<T> {
         return this.instance;
     }
 
-    public static class BlockRegistries<T extends Block, E extends BlockItem> extends ObjectRegistries<T> {
-
-        protected final Function<T, E> function;
-        protected E intance;
-
-        public BlockRegistries(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier, Function<T, E> function) {
-            super(registry, id, supplier);
-            this.function = function;
-        }
-
-        @Override
-        protected T create() {
-            T instance = super.create();
-            this.intance = Registry.register(BuiltInRegistries.ITEM, this.id, this.function.apply(instance));
-            return instance;
-        }
-    }
-
     /**
      * Creating a custom block with proper Item, getting the Id, and the supplier function to define the Block Properties
      * */
