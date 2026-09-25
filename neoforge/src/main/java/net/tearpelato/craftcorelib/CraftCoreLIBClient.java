@@ -11,8 +11,10 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
+import net.tearpelato.craftcorelib.api.network.Network;
 import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
 import net.tearpelato.craftcorelib.network.NeoForgeNetworkRegistrar;
+import net.tearpelato.craftcorelib.network.NeoForgeNetworkSender;
 
 @EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
 public class CraftCoreLIBClient {
@@ -45,6 +47,7 @@ public class CraftCoreLIBClient {
 
     @SubscribeEvent
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+        Network.setSender(new NeoForgeNetworkSender());
         var registrar = new NeoForgeNetworkRegistrar(event.registrar(NetworkBuilder.NETWORK_VERSION));
         NetworkBuilder.flush(registrar);
     }

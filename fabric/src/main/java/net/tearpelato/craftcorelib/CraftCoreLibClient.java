@@ -31,6 +31,5 @@ public class CraftCoreLibClient implements ClientModInitializer {
             });
         });
 
-        NetworkBuilder.flush(new FabricNetworkRegistrar());
     }
 }
