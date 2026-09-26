@@ -1,5 +1,6 @@
 package net.tearpelato.craftcorelib.api.registry;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -108,11 +110,13 @@ public class ObjectRegistries<T> {
         return new ObjectRegistries<>(registry, id, supplier);
     }
 
-    public static <T extends DataComponentType<?>> ObjectRegistries<T> registerEnchantmentEffect(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends DataComponentType<?>> ObjectRegistries<T> registerEnchantmentComponentEffect(ResourceLocation id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, id, supplier);
     }
 
-
+    public static <T extends MapCodec<EnchantmentEntityEffect>> ObjectRegistries<T> registerEnchantmentEffect(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE, id, supplier);
+    }
 
 
 
