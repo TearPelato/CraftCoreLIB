@@ -5,6 +5,7 @@ import net.tearpelato.craftcorelib.api.network.Network;
 import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
 import net.tearpelato.craftcorelib.network.FabricNetworkRegistrar;
 import net.tearpelato.craftcorelib.network.FabricNetworkSender;
+import net.tearpelato.craftcorelib.test.ModConfig;
 
 public class Craftcorelib implements ModInitializer {
 
@@ -12,5 +13,6 @@ public class Craftcorelib implements ModInitializer {
     public void onInitialize() {
         Network.setSender(new FabricNetworkSender());
         NetworkBuilder.flush(new FabricNetworkRegistrar());
+        ModConfig.init();
     }
 }

@@ -30,7 +30,8 @@ How To use:
 ```
 public class ModConfig {
 
-    public static final ConfigCategory MY_COOL_CATEGORY = ConfigCategory.create("my_cool_category")
+    //You can choose 3 different config types: CLIENT, SERVER,COMMON
+    public static final ConfigCategory MY_COOL_CATEGORY = ConfigCategory.create("my_cool_category", ConfigType.CLIENT)
             .title("my_cool_category");
 
 

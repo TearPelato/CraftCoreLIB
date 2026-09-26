@@ -6,25 +6,41 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.tearpelato.craftcorelib.api.config.ConfigCategory;
-import net.tearpelato.craftcorelib.api.config.ConfigValue;
+import net.tearpelato.craftcorelib.api.config.*;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NeoForgeConfigHelper implements IConfigHelper {
 
-    private static final Map<String, ModConfigSpec> SPECS = new HashMap<>();
+    private static final Map<String, Map<ConfigType, ModConfigSpec>> SPECS = new HashMap<>();
 
     @Override
     public void register(String modId, List<ConfigCategory> categories) {
+        Map<ConfigType, List<ConfigCategory>> byType = ConfigBinder.groupByType(categories);
+
+        ModContainer container = ModList.get().getModContainerById(modId)
+                .orElseThrow(() -> new IllegalStateException("Mod " + modId + " not found"));
+
+        for (Map.Entry<ConfigType, List<ConfigCategory>> entry : byType.entrySet()) {
+            registerType(container, modId, entry.getKey(), entry.getValue());
+        }
+
+        if (!ModList.get().isLoaded("configured")) {
+            container.registerExtensionPoint(IConfigScreenFactory.class,
+                    (mc, parent) -> new ConfigurationScreen(container, parent));
+        }
+    }
+
+    private void registerType(ModContainer container, String modId, ConfigType type, List<ConfigCategory> categories) {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        Map<String, ModConfigSpec.ConfigValue<?>> specValues = new HashMap<>();
 
         for (ConfigCategory category : categories) {
-            String section = category.getName();
-            builder.push(section);
+            builder.push(category.getName());
 
             if (category.getTitleKey() != null) {
                 builder.translation(category.getTitleKey());
@@ -34,75 +50,83 @@ public class NeoForgeConfigHelper implements IConfigHelper {
             }
 
             for (ConfigValue<?> value : category.getValues()) {
-                defineValue(builder, value);
+                specValues.put(ConfigBinder.fullKey(category, value), registerSpecValue(builder, value));
             }
 
             builder.pop();
         }
 
         ModConfigSpec spec = builder.build();
-        SPECS.put(modId, spec);
+        SPECS.computeIfAbsent(modId, key -> new EnumMap<>(ConfigType.class)).put(type, spec);
 
-        ModContainer container = ModList.get().getModContainerById(modId)
-                .orElseThrow(() -> new IllegalStateException("Mod " + modId + " not found"));
+        container.registerConfig(toModConfigType(type), spec);
 
-        container.registerConfig(ModConfig.Type.COMMON, spec);
-        container.registerExtensionPoint(IConfigScreenFactory.class,
-                (mc, parent) -> new ConfigurationScreen(container, parent));
+        ConfigBinder.bindAll(categories, new ConfigBackend() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> T get(ConfigCategory category, ConfigValue<T> value) {
+                ModConfigSpec.ConfigValue<?> specValue = specValues.get(ConfigBinder.fullKey(category, value));
+                return specValue != null ? (T) specValue.get() : value.getDefault();
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> void set(ConfigCategory category, ConfigValue<T> value, T newValue) {
+                ModConfigSpec.ConfigValue<Object> specValue =
+                        (ModConfigSpec.ConfigValue<Object>) specValues.get(ConfigBinder.fullKey(category, value));
+                if (specValue != null) {
+                    specValue.set(newValue);
+                }
+            }
+        });
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> void defineValue(ModConfigSpec.Builder builder, ConfigValue<T> value) {
+    private static ModConfig.Type toModConfigType(ConfigType type) {
+        return switch (type) {
+            case CLIENT -> ModConfig.Type.CLIENT;
+            case SERVER -> ModConfig.Type.SERVER;
+            case COMMON -> ModConfig.Type.COMMON;
+        };
+    }
+
+    private static <T> ModConfigSpec.ConfigValue<?> registerSpecValue(ModConfigSpec.Builder builder, ConfigValue<T> value) {
         if (value.getCommentKey() != null) {
             builder.comment(value.getCommentKey());
         }
 
         T def = value.getDefault();
-        ModConfigSpec.ConfigValue<T> neoValue;
 
-        if (def instanceof Boolean) {
-            neoValue = (ModConfigSpec.ConfigValue<T>) builder.define(value.getKey(), (Boolean) def);
-        } else if (def instanceof Integer) {
-            if (value.getMin() != null && value.getMax() != null) {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.defineInRange(
-                        value.getKey(),
-                        (Integer) def,
-                        (Integer) value.getMin(),
-                        (Integer) value.getMax()
-                );
-            } else {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.define(value.getKey(), (Integer) def);
-            }
-        } else if (def instanceof Double) {
-            if (value.getMin() != null && value.getMax() != null) {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.defineInRange(
-                        value.getKey(),
-                        (Double) def,
-                        (Double) value.getMin(),
-                        (Double) value.getMax()
-                );
-            } else {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.define(value.getKey(), (Double) def);
-            }
-        } else if (def instanceof Long) {
-            if (value.getMin() != null && value.getMax() != null) {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.defineInRange(
-                        value.getKey(),
-                        (Long) def,
-                        (Long) value.getMin(),
-                        (Long) value.getMax()
-                );
-            } else {
-                neoValue = (ModConfigSpec.ConfigValue<T>) builder.define(value.getKey(), (Long) def);
-            }
-        } else if (def instanceof String) {
-            neoValue = (ModConfigSpec.ConfigValue<T>) builder.define(value.getKey(), (String) def);
-        } else if (def instanceof Enum) {
-            neoValue = (ModConfigSpec.ConfigValue<T>) builder.defineEnum(value.getKey(), (Enum) def);
-        } else {
-            neoValue = builder.define(value.getKey(), def);
+        if (def instanceof Boolean bool) {
+            return builder.define(value.getKey(), bool.booleanValue());
+        }
+        if (def instanceof Integer intVal) {
+            int min = value.getMin() != null ? (Integer) value.getMin() : Integer.MIN_VALUE;
+            int max = value.getMax() != null ? (Integer) value.getMax() : Integer.MAX_VALUE;
+            return builder.defineInRange(value.getKey(), intVal.intValue(), min, max);
+        }
+        if (def instanceof Double doubleVal) {
+            double min = value.getMin() != null ? (Double) value.getMin() : -Double.MAX_VALUE;
+            double max = value.getMax() != null ? (Double) value.getMax() : Double.MAX_VALUE;
+            return builder.defineInRange(value.getKey(), doubleVal.doubleValue(), min, max);
+        }
+        if (def instanceof Long longVal) {
+            long min = value.getMin() != null ? (Long) value.getMin() : Long.MIN_VALUE;
+            long max = value.getMax() != null ? (Long) value.getMax() : Long.MAX_VALUE;
+            return builder.defineInRange(value.getKey(), longVal.longValue(), min, max);
+        }
+        if (def instanceof String stringVal) {
+            return builder.define(value.getKey(), stringVal);
+        }
+        if (def instanceof Enum<?>) {
+            return defineEnumValue(builder, value.getKey(), (Enum<?>) def);
         }
 
-        value.bind(neoValue::get, neoValue::set);
+        return builder.define(value.getKey(), def);
+    }
+
+    private static <V extends Enum<V>> ModConfigSpec.ConfigValue<V> defineEnumValue(
+            ModConfigSpec.Builder builder, String key, Enum<?> rawDefault) {
+        V typedDefault = (V) rawDefault;
+        return builder.defineEnum(key, typedDefault);
     }
 }
