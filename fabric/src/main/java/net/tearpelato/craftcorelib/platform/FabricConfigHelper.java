@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.core.io.WritingMode;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.tearpelato.craftcorelib.api.config.*;
+import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
 import java.nio.file.Path;
@@ -20,7 +21,7 @@ public class FabricConfigHelper implements IConfigHelper {
 
     @Override
     public void register(String modId, List<ConfigCategory> categories) {
-        Map<ConfigType, List<ConfigCategory>> byType = ConfigBinder.groupByType(categories);
+        Map<ConfigType, List<ConfigCategory>> byType = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.groupByType(categories);
         CATEGORIES.computeIfAbsent(modId, key -> new EnumMap<>(ConfigType.class)).putAll(byType);
 
         for (Map.Entry<ConfigType, List<ConfigCategory>> entry : byType.entrySet()) {
@@ -50,11 +51,11 @@ public class FabricConfigHelper implements IConfigHelper {
                 }
 
                 for (ConfigValue<?> value : category.getValues()) {
-                    String fullKey = ConfigBinder.fullKey(category, value);
+                    String fullKey = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value);
                     Object def = value.getDefault();
 
                     Object current = fileConfig.contains(fullKey) ? fileConfig.get(fullKey) : def;
-                    current = ConfigBinder.clampRaw(current, value);
+                    current = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.clampRaw(current, value);
 
                     values.put(fullKey, current);
                     fileConfig.set(fullKey, current);
@@ -68,18 +69,18 @@ public class FabricConfigHelper implements IConfigHelper {
             fileConfig.save();
         }
 
-        ConfigBinder.bindAll(categories, new ConfigBackend() {
+        net.tearpelato.craftcorelib.api.config.util.ConfigBinder.bindAll(categories, new net.tearpelato.craftcorelib.api.config.util.ConfigBackend() {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(ConfigCategory category, ConfigValue<T> value) {
-                Object stored = values.get(ConfigBinder.fullKey(category, value));
+                Object stored = values.get(net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value));
                 return stored != null ? (T) stored : value.getDefault();
             }
 
             @Override
             public <T> void set(ConfigCategory category, ConfigValue<T> value, T newValue) {
-                T clamped = ConfigBinder.clamp(newValue, value);
-                values.put(ConfigBinder.fullKey(category, value), clamped);
+                T clamped = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.clamp(newValue, value);
+                values.put(net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value), clamped);
                 saveType(modId, type);
             }
         });

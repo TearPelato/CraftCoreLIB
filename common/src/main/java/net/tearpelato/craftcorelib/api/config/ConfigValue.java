@@ -14,7 +14,7 @@ public class ConfigValue<T> {
     private Supplier<T> getter;
     private Consumer<T> setter;
 
-    ConfigValue(ConfigCategory parent, String key, T defaultValue) {
+   public ConfigValue(ConfigCategory parent, String key, T defaultValue) {
         this.parent = parent;
         this.key = key;
         this.defaultValue = defaultValue;

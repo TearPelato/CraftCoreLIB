@@ -7,6 +7,7 @@ import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.tearpelato.craftcorelib.api.config.*;
+import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
 import java.util.EnumMap;
@@ -20,7 +21,7 @@ public class NeoForgeConfigHelper implements IConfigHelper {
 
     @Override
     public void register(String modId, List<ConfigCategory> categories) {
-        Map<ConfigType, List<ConfigCategory>> byType = ConfigBinder.groupByType(categories);
+        Map<ConfigType, List<ConfigCategory>> byType = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.groupByType(categories);
 
         ModContainer container = ModList.get().getModContainerById(modId)
                 .orElseThrow(() -> new IllegalStateException("Mod " + modId + " not found"));
@@ -50,7 +51,7 @@ public class NeoForgeConfigHelper implements IConfigHelper {
             }
 
             for (ConfigValue<?> value : category.getValues()) {
-                specValues.put(ConfigBinder.fullKey(category, value), registerSpecValue(builder, value));
+                specValues.put(net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value), registerSpecValue(builder, value));
             }
 
             builder.pop();
@@ -61,11 +62,11 @@ public class NeoForgeConfigHelper implements IConfigHelper {
 
         container.registerConfig(toModConfigType(type), spec);
 
-        ConfigBinder.bindAll(categories, new ConfigBackend() {
+        net.tearpelato.craftcorelib.api.config.util.ConfigBinder.bindAll(categories, new net.tearpelato.craftcorelib.api.config.util.ConfigBackend() {
             @Override
             @SuppressWarnings("unchecked")
             public <T> T get(ConfigCategory category, ConfigValue<T> value) {
-                ModConfigSpec.ConfigValue<?> specValue = specValues.get(ConfigBinder.fullKey(category, value));
+                ModConfigSpec.ConfigValue<?> specValue = specValues.get(net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value));
                 return specValue != null ? (T) specValue.get() : value.getDefault();
             }
 

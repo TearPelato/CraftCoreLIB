@@ -1,4 +1,8 @@
-package net.tearpelato.craftcorelib.api.config;
+package net.tearpelato.craftcorelib.api.config.util;
+
+import net.tearpelato.craftcorelib.api.config.ConfigCategory;
+import net.tearpelato.craftcorelib.api.config.ConfigType;
+import net.tearpelato.craftcorelib.api.config.ConfigValue;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

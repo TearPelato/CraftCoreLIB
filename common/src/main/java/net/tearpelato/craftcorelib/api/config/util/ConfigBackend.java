@@ -1,4 +1,7 @@
-package net.tearpelato.craftcorelib.api.config;
+package net.tearpelato.craftcorelib.api.config.util;
+
+import net.tearpelato.craftcorelib.api.config.ConfigCategory;
+import net.tearpelato.craftcorelib.api.config.ConfigValue;
 
 public interface ConfigBackend {
 
