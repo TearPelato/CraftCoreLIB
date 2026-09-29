@@ -19,12 +19,6 @@ import net.tearpelato.craftcorelib.network.NeoForgeNetworkSender;
 @EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
 public class CraftCoreLIBClient {
 
-    public CraftCoreLIBClient(ModContainer container) {
-        if(!ModList.get().isLoaded("configured")) {
-            container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
-        }
-    }
-
     @SubscribeEvent
     public static void onContainerInit(ScreenEvent.Init.Post event) {
         ScreenRenderEvent.INIT.post().init(event.getScreen());

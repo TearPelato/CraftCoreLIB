@@ -1,11 +1,22 @@
 package net.tearpelato.craftcorelib.platform;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.tearpelato.craftcorelib.platform.services.IPlatformHelper;
 
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 public class FabricPlatformHelper implements IPlatformHelper {
+
+    private static final Map<String, ResourceLocation> ICONS = new HashMap<>();
 
     @Override
     public String getPlatformName() {
@@ -31,26 +42,23 @@ public class FabricPlatformHelper implements IPlatformHelper {
 
     @Override
     public ResourceLocation getModIcon(String modId) {
-        return FabricLoader.getInstance().getModContainer(modId)
-                .map(ModContainer::getMetadata)
-                .flatMap(meta -> meta.getIconPath(64))
-                .map(path -> {
-                    String cleanPath = path;
-                    String prefix = "assets/" + modId + "/";
-                    if (cleanPath.startsWith(prefix)) {
-                        cleanPath = cleanPath.substring(prefix.length());
-                    } else if (cleanPath.startsWith("assets/")) {
-                        cleanPath = cleanPath.substring("assets/".length());
-                        int slash = cleanPath.indexOf('/');
-                        if (slash != -1) {
-                            return ResourceLocation.fromNamespaceAndPath(
-                                    cleanPath.substring(0, slash),
-                                    cleanPath.substring(slash + 1)
-                            );
+        return ICONS.computeIfAbsent(modId, id -> {
+            Optional<ModContainer> containerOpt = FabricLoader.getInstance().getModContainer(id);
+            if (containerOpt.isEmpty()) return null;
+
+            ModContainer container = containerOpt.get();
+            Optional<String> iconPath = container.getMetadata().getIconPath(32);
+            return iconPath.flatMap(s -> container.findPath(s)
+                    .map(path -> {
+                        try (InputStream in = Files.newInputStream(path)) {
+                            ResourceLocation loc = ResourceLocation.fromNamespaceAndPath("craftcorelib", "modicon/" + id);
+                            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(NativeImage.read(in)));
+                            return loc;
+                        } catch (Exception e) {
+                            return null;
                         }
-                    }
-                    return ResourceLocation.fromNamespaceAndPath(modId, cleanPath);
-                })
-                .orElse(null);
+                    })).orElse(null);
+
+        });
     }
 }

@@ -2,17 +2,22 @@ package net.tearpelato.craftcorelib.platform;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
+import com.terraformersmc.modmenu.api.ConfigScreenFactory;
+import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.tearpelato.craftcorelib.api.config.*;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.tearpelato.craftcorelib.api.config.ConfigCategory;
+import net.tearpelato.craftcorelib.api.config.ConfigType;
+import net.tearpelato.craftcorelib.api.config.ConfigValue;
 import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
 import java.nio.file.Path;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 public class FabricConfigHelper implements IConfigHelper {
 
@@ -32,6 +37,38 @@ public class FabricConfigHelper implements IConfigHelper {
             }
 
             registerType(modId, type, entry.getValue());
+        }
+    }
+
+    @Override
+    public void save(String modId, ConfigType type) {
+        saveType(modId, type);
+    }
+
+    @Override
+    public Map<String, Function<Screen, Screen>> getExternalConfigScreens() {
+        Map<String, Function<Screen, Screen>> result = new LinkedHashMap<>();
+        if (!FabricLoader.getInstance().isModLoaded("modmenu")) return result;
+
+        Screen probe = Minecraft.getInstance().screen;
+        for (EntrypointContainer<ModMenuApi> c :
+                FabricLoader.getInstance().getEntrypointContainers("modmenu", ModMenuApi.class)) {
+            try {
+                ModMenuApi api = c.getEntrypoint();
+                String id = c.getProvider().getMetadata().getId();
+
+                addIfUseful(result, id, api.getModConfigScreenFactory(), probe);
+                api.getProvidedConfigScreenFactories()
+                        .forEach((modId, f) -> addIfUseful(result, modId, f, probe));
+            } catch (Throwable ignored) {}
+        }
+        return result;
+    }
+
+    private static void addIfUseful(Map<String, Function<Screen, Screen>> map, String id,
+                                    ConfigScreenFactory<?> f, Screen probe) {
+        if (f != null && f.create(probe) != null) {
+            map.put(id, f::create);
         }
     }
 
@@ -81,7 +118,6 @@ public class FabricConfigHelper implements IConfigHelper {
             public <T> void set(ConfigCategory category, ConfigValue<T> value, T newValue) {
                 T clamped = net.tearpelato.craftcorelib.api.config.util.ConfigBinder.clamp(newValue, value);
                 values.put(net.tearpelato.craftcorelib.api.config.util.ConfigBinder.fullKey(category, value), clamped);
-                saveType(modId, type);
             }
         });
     }

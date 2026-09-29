@@ -20,14 +20,11 @@
     ],
     "client": [
       "net.tearpelato.craftcorelib.CraftCoreLibClient"
-    ],
-    "modmenu": [
-      "net.tearpelato.craftcorelib.compat.ModMenuIntegration"
     ]
   },
   "mixins": [
-    "${mod_id}.mixins.json",
-    "${mod_id}.fabric.mixins.json"
+    "craftcorelib.mixins.json",
+    "craftcorelib.fabric.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",

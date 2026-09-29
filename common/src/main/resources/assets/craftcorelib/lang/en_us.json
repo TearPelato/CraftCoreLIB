@@ -2,7 +2,14 @@
   "gui.craftcorelib.config_button": "Configs",
   "gui.craftcorelib.config.title": "Configuration Screen",
   "gui.craftcorelib.config.search": "Search...",
-  "gui.craftcorelib.config.search_hint": "Search..."
+  "gui.craftcorelib.config.search_hint": "Search...",
+  "gui.craftcorelib.config.unavailable": "Server Config are available only when you are in a world",
+  "gui.craftcorelib.config.server_unavailable": "Server Config are available only when you are in a world",
+  "gui.craftcorelib.config.reset": "Reset",
+  "gui.craftcorelib.config.save": "Save",
+  "gui.craftcorelib.config.discard": "Discard Changes",
+  "gui.craftcorelib.config.unsaved_title": "Unsaved Changes",
+  "gui.craftcorelib.config.unsaved_message": "Unsaved Changes will be lost!"
 
 
 }

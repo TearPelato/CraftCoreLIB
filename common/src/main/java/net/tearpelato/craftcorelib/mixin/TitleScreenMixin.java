@@ -25,32 +25,21 @@ public class TitleScreenMixin {
     private void craftcorelib$addConfigButton(int y, int rowHeight, CallbackInfo ci) {
         TitleScreen self = (TitleScreen) (Object) this;
 
-        AbstractWidget realmsButton = null;
-        for (var child : ((ScreenAccessor) self).callChildren()) {
-            if (child instanceof AbstractWidget widget) {
-                Component msg = widget.getMessage();
-                if (msg != null && msg.getString().equals(Component.translatable("menu.online").getString())) {
-                    realmsButton = widget;
-                    break;
-                }
-            }
-        }
+        AbstractWidget singleplayerButton = craftcorelib$findButton(self);
+        if (singleplayerButton == null) return;
 
-        if (realmsButton == null) {
-            return;
-        }
-
-        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/config_icon.png");
-        WidgetSprites sprites = new WidgetSprites(icon, icon);
+        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "config_icon");
+        ResourceLocation iconHighlighted = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "config_icon_highlighted");
+        WidgetSprites sprites = new WidgetSprites(icon, iconHighlighted);
 
         int buttonSize = 20;
         int spacing = 4;
 
+        int x = singleplayerButton.getX() + singleplayerButton.getWidth() + spacing;
+        int by = singleplayerButton.getY() + (singleplayerButton.getHeight() - buttonSize) / 2;
+
         this.craftcorelib$configButton = new ImageButton(
-                realmsButton.getX() + realmsButton.getWidth() + spacing,
-                realmsButton.getY(),
-                buttonSize,
-                buttonSize,
+                x, by, buttonSize, buttonSize,
                 sprites,
                 button -> Minecraft.getInstance().setScreen(new ConfigScreen(self)),
                 Component.translatable("gui.craftcorelib.config.title")
@@ -59,26 +48,31 @@ public class TitleScreenMixin {
         ((ScreenAccessor) self).callAddRenderableWidget(this.craftcorelib$configButton);
     }
 
+    @Unique
+    private static AbstractWidget craftcorelib$findButton(TitleScreen self) {
+        String target = Component.translatable("menu.singleplayer").getString();
+        for (var child : ((ScreenAccessor) self).callChildren()) {
+            if (child instanceof AbstractWidget widget) {
+                Component msg = widget.getMessage();
+                if (msg.getString().equals(target)) {
+                    return widget;
+                }
+            }
+        }
+        return null;
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void craftcorelib$keepAligned(CallbackInfo ci) {
         if (this.craftcorelib$configButton == null) return;
 
         TitleScreen self = (TitleScreen) (Object) this;
-        AbstractWidget realmsButton = null;
+        AbstractWidget singleplayerButton = craftcorelib$findButton(self);
 
-        for (var child : self.children()) {
-            if (child instanceof AbstractWidget widget) {
-                Component msg = widget.getMessage();
-                if (msg != null && msg.getString().equals(Component.translatable("menu.online").getString())) {
-                    realmsButton = widget;
-                    break;
-                }
-            }
-        }
-
-        if (realmsButton != null) {
-            this.craftcorelib$configButton.setX(realmsButton.getX() + realmsButton.getWidth() + 4);
-            this.craftcorelib$configButton.setY(realmsButton.getY());
+        if (singleplayerButton != null) {
+            this.craftcorelib$configButton.setX(singleplayerButton.getX() + singleplayerButton.getWidth() + 4);
+            this.craftcorelib$configButton.setY(singleplayerButton.getY()
+                    + (singleplayerButton.getHeight() - this.craftcorelib$configButton.getHeight()) / 2);
         }
     }
 }
