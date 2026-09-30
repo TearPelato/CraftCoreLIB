@@ -23,9 +23,38 @@ public class ModConfig {
             //Translatable Description -> define the description inside your localisation default en_su.json
             .comment("config.mymodid.mycondition.dec");
 
+    public static final ConfigValue<Boolean> MY_CONDITION_TRUE = MY_COOL_CATEGORY
+            .define("my_condition_true", true)
+            //Translatable Name -> define the name inside your localisation default en_su.json
+            .name("config.mymodid.myconditiontrue")
+            //Translatable Description -> define the description inside your localisation default en_su.json
+            .comment("config.mymodid.myconditiontrue.dec");
+
+    public static final ConfigValue<Boolean> MY_CONDITION_WHAT = MY_COOL_CATEGORY
+            .define("my_condition_what", true)
+            //Translatable Name -> define the name inside your localisation default en_su.json
+            .name("config.mymodid.mycondition")
+            //Translatable Description -> define the description inside your localisation default en_su.json
+            .comment("config.mymodid.mycondition.dec");
+
+    public static final ConfigValue<Boolean> MY_CONDITION_WHEN = MY_COOL_CATEGORY
+            .define("my_condition_when", false)
+            //Translatable Name -> define the name inside your localisation default en_su.json
+            .name("config.mymodid.mycondition")
+            //Translatable Description -> define the description inside your localisation default en_su.json
+            .comment("config.mymodid.mycondition.dec");
+
     public static final ConfigValue<Integer> MY_VALUE = MY_COOL_CATEGORY_SERVER
             .define("my_value", 3)
             .range(0,5)
+            //Translatable Name -> define the name inside your localisation default en_su.json
+            .name("config.mymodid.myvalue")
+            //Translatable Description -> define the description inside your localisation default en_su.json
+            .comment("config.mymodid.myvalue.dec");
+
+    public static final ConfigValue<Integer> MY_VALUE_2 = MY_COOL_CATEGORY
+            .define("my_value_2", 5)
+            .range(0,15)
             //Translatable Name -> define the name inside your localisation default en_su.json
             .name("config.mymodid.myvalue")
             //Translatable Description -> define the description inside your localisation default en_su.json

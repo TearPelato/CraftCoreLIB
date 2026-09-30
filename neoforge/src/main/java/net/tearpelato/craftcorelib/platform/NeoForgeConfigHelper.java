@@ -1,23 +1,23 @@
 package net.tearpelato.craftcorelib.platform;
 
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforgespi.language.IModInfo;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
 import net.tearpelato.craftcorelib.api.config.ConfigValue;
 import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
+import net.tearpelato.craftcorelib.api.config.util.ExternalConfigScanner;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NeoForgeConfigHelper implements IConfigHelper {
 
@@ -52,35 +52,9 @@ public class NeoForgeConfigHelper implements IConfigHelper {
         }
     }
 
-    private ModConfig.Type mapType(ConfigType type) {
-        return switch (type) {
-            case CLIENT -> ModConfig.Type.CLIENT;
-            case SERVER -> ModConfig.Type.SERVER;
-            case COMMON -> ModConfig.Type.COMMON;
-        };
-    }
-
     @Override
-    public Map<String, Function<Screen, Screen>> getExternalConfigScreens() {
-        Map<String, Function<Screen, Screen>> result = new LinkedHashMap<>();
-
-        for (IModInfo info : ModList.get().getMods()) {
-            String id = info.getModId();
-            if (id.equals("minecraft")) continue;
-
-            Optional<? extends ModContainer> opt = ModList.get().getModContainerById(id);
-            if (opt.isEmpty()) continue;
-            ModContainer container = opt.get();
-
-            Optional<IConfigScreenFactory> factory = container.getCustomExtension(IConfigScreenFactory.class);
-            if (factory.isPresent()) {
-                IConfigScreenFactory f = factory.get();
-                result.put(id, parent -> f.createScreen(container, parent));
-            } else if (!ModConfigs.getModConfigs(id).isEmpty()) {
-                result.put(id, parent -> new ConfigurationScreen(container, parent));
-            }
-        }
-        return result;
+    public void scanExternalConfigs() {
+        ExternalConfigScanner.scan(FMLPaths.CONFIGDIR.get());
     }
 
     private void registerType(ModContainer container, String modId, ConfigType type, List<ConfigCategory> categories) {

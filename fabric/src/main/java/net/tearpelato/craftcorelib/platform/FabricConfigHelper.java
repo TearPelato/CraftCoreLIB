@@ -13,6 +13,7 @@ import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
 import net.tearpelato.craftcorelib.api.config.ConfigValue;
 import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
+import net.tearpelato.craftcorelib.api.config.util.ExternalConfigScanner;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
 import java.nio.file.Path;
@@ -46,23 +47,8 @@ public class FabricConfigHelper implements IConfigHelper {
     }
 
     @Override
-    public Map<String, Function<Screen, Screen>> getExternalConfigScreens() {
-        Map<String, Function<Screen, Screen>> result = new LinkedHashMap<>();
-        if (!FabricLoader.getInstance().isModLoaded("modmenu")) return result;
-
-        Screen probe = Minecraft.getInstance().screen;
-        for (EntrypointContainer<ModMenuApi> c :
-                FabricLoader.getInstance().getEntrypointContainers("modmenu", ModMenuApi.class)) {
-            try {
-                ModMenuApi api = c.getEntrypoint();
-                String id = c.getProvider().getMetadata().getId();
-
-                addIfUseful(result, id, api.getModConfigScreenFactory(), probe);
-                api.getProvidedConfigScreenFactories()
-                        .forEach((modId, f) -> addIfUseful(result, modId, f, probe));
-            } catch (Throwable ignored) {}
-        }
-        return result;
+    public void scanExternalConfigs() {
+        ExternalConfigScanner.scan(FabricLoader.getInstance().getConfigDir());
     }
 
     private static void addIfUseful(Map<String, Function<Screen, Screen>> map, String id,

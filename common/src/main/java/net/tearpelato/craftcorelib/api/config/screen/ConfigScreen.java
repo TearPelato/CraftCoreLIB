@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Function;
 
 public class ConfigScreen extends Screen {
 
@@ -43,7 +42,6 @@ public class ConfigScreen extends Screen {
     private final Map<ConfigValue<?>, Object> originalValues = new HashMap<>();
     private List<ConfigValue<?>> visibleValues = List.of();
 
-    private Map<String, Function<Screen, Screen>> externalScreens = Map.of();
     private final Map<String, Icon> iconCache = new HashMap<>();
 
     private static final int LEFT_PANEL_WIDTH = 140;
@@ -64,19 +62,22 @@ public class ConfigScreen extends Screen {
     private Button saveButton;
     private ConfigEntryList entryList;
     private EditBox activeConfigEditBox;
+    private static boolean externalScanned = false;
 
     public ConfigScreen(Screen parent) {
         super(Component.translatable("gui.craftcorelib.config.title"));
         this.parent = parent;
     }
 
-    public ConfigScreen(Component title) {
-        this(Minecraft.getInstance().screen);
-    }
 
     @Override
     protected void init() {
         super.init();
+
+        if (!externalScanned) {
+            Services.CONFIG.scanExternalConfigs();
+            externalScanned = true;
+        }
 
         int actionY = this.height - ACTION_BTN_MARGIN - ACTION_BTN_HEIGHT;
         int saveX = this.width - ACTION_BTN_MARGIN - ACTION_BTN_WIDTH;
@@ -116,22 +117,11 @@ public class ConfigScreen extends Screen {
     }
 
     private Set<String> collectMods() {
-        Set<String> own = ConfigManager.getRegisteredModIds();
-
-        Map<String, Function<Screen, Screen>> external = new LinkedHashMap<>();
-        try {
-            external.putAll(Services.CONFIG.getExternalConfigScreens());
-        } catch (Throwable t) {
-            LOGGER.warn("Unable to collect external config screens", t);
-        }
-        external.keySet().removeAll(own);
-        this.externalScreens = external;
-
         Set<String> all = new TreeSet<>(
                 Comparator.comparing((String id) -> Services.PLATFORM.getModName(id).toLowerCase(Locale.ROOT))
                         .thenComparing(Comparator.naturalOrder()));
-        all.addAll(own);
-        all.addAll(external.keySet());
+
+        all.addAll(ConfigManager.getRegisteredModIds());
         return all;
     }
 
@@ -228,12 +218,6 @@ public class ConfigScreen extends Screen {
     }
 
     public void selectMod(String modId) {
-        Function<Screen, Screen> external = this.externalScreens.get(modId);
-        if (external != null) {
-            openExternal(modId, external);
-            return;
-        }
-
         if (modId.equals(this.selectedModId)) {
             this.selectedModId = null;
             this.selectedType = null;
@@ -244,45 +228,25 @@ public class ConfigScreen extends Screen {
         updateRightPanel();
     }
 
-    private void openExternal(String modId, Function<Screen, Screen> factory) {
-        try {
-            Screen screen = factory.apply(this);
-            if (screen != null) {
-                this.minecraft.setScreen(screen);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Failed to open config screen for mod {}", modId, e);
-        }
-    }
-
-    public void selectType(ConfigType type) {
-        if (type == this.selectedType) {
-            this.selectedType = null;
-        } else {
-            this.selectedType = type;
-        }
-        updateRightPanel();
-    }
-
     private void updateRightPanel() {
         this.typeButtons.forEach(this::removeWidget);
         this.typeButtons.clear();
 
-        if (this.entryList != null) {
-            this.removeWidget(this.entryList);
-            this.entryList = null;
+        if (this.resetButton != null) {
+            this.removeWidget(this.resetButton);
+            this.resetButton = null;
         }
-        this.visibleValues = List.of();
-        this.activeConfigEditBox = null;
+        if (this.saveButton != null) {
+            this.removeWidget(this.saveButton);
+            this.saveButton = null;
+        }
 
         if (this.selectedModId == null) {
-            updateActionButtons();
             return;
         }
 
         List<ConfigCategory> categories = ConfigManager.getCategories(this.selectedModId);
         if (categories.isEmpty()) {
-            updateActionButtons();
             return;
         }
 
@@ -295,70 +259,50 @@ public class ConfigScreen extends Screen {
             }
         }
 
-        int rightX = LEFT_PANEL_WIDTH + 20;
-        int y = TOP_BAR_HEIGHT + 60;
-        int btnWidth = 90;
-        int btnHeight = 24;
+        int btnWidth = 200;
+        int btnHeight = 20;
         int gap = 8;
-        int startX = rightX;
+
+        int rightX = LEFT_PANEL_WIDTH + (this.width - LEFT_PANEL_WIDTH - btnWidth) / 2;
+        int y = TOP_BAR_HEIGHT + 55;
 
         if (hasClient) {
-            Button btn = createTypeButton(ConfigType.CLIENT, startX, y, btnWidth, btnHeight, true, null);
+            Button btn = createBigTypeButton(ConfigType.CLIENT, rightX, y, btnWidth, btnHeight, true, null);
             this.typeButtons.add(btn);
             this.addRenderableWidget(btn);
-            startX += btnWidth + gap;
+            y += btnHeight + gap;
         }
         if (hasServer) {
-            boolean serverAvailable = this.minecraft.level != null;
-            Component tooltip = serverAvailable ? null
+            boolean available = this.minecraft.level != null;
+            Component tooltip = available ? null
                     : Component.translatable("gui.craftcorelib.config.server_unavailable");
-            Button btn = createTypeButton(ConfigType.SERVER, startX, y, btnWidth, btnHeight, serverAvailable, tooltip);
+            Button btn = createBigTypeButton(ConfigType.SERVER, rightX, y, btnWidth, btnHeight, available, tooltip);
             this.typeButtons.add(btn);
             this.addRenderableWidget(btn);
-            startX += btnWidth + gap;
+            y += btnHeight + gap;
         }
         if (hasCommon) {
-            Button btn = createTypeButton(ConfigType.COMMON, startX, y, btnWidth, btnHeight, true, null);
+            Button btn = createBigTypeButton(ConfigType.COMMON, rightX, y, btnWidth, btnHeight, true, null);
             this.typeButtons.add(btn);
             this.addRenderableWidget(btn);
         }
-
-        if (this.selectedType != null) {
-            List<ConfigValue<?>> values = new ArrayList<>();
-            for (ConfigCategory cat : categories) {
-                if (cat.getType() == this.selectedType) {
-                    values.addAll(cat.getValues());
-                }
-            }
-            this.visibleValues = values;
-
-            int listY = y + btnHeight + 12;
-            int listBottom = this.height - ACTION_BTN_MARGIN - ACTION_BTN_HEIGHT - 8;
-            int listHeight = Math.max(ACTION_BTN_HEIGHT, listBottom - listY);
-
-            this.entryList = new ConfigEntryList(this.minecraft,
-                    this.width - LEFT_PANEL_WIDTH - 40,
-                    listHeight,
-                    listY,
-                    26);
-            this.entryList.setX(rightX);
-            this.entryList.setEntries(values);
-            this.addRenderableWidget(this.entryList);
-        }
-
-        bringActionButtonsToFront();
-        updateActionButtons();
     }
 
-    private void bringActionButtonsToFront() {
-        if (this.resetButton != null) {
-            this.removeWidget(this.resetButton);
-            this.addRenderableWidget(this.resetButton);
+    private Button createBigTypeButton(ConfigType type, int x, int y, int w, int h,
+                                       boolean enabled, Component disabledTooltip) {
+        Component label = Component.translatable("gui.craftcorelib.config.type." + type.name().toLowerCase(Locale.ROOT));
+        Button btn = Button.builder(label, b -> openTypeScreen(type))
+                .bounds(x, y, w, h)
+                .build();
+        btn.active = enabled;
+        if (!enabled && disabledTooltip != null) {
+            btn.setTooltip(Tooltip.create(disabledTooltip));
         }
-        if (this.saveButton != null) {
-            this.removeWidget(this.saveButton);
-            this.addRenderableWidget(this.saveButton);
-        }
+        return btn;
+    }
+
+    private void openTypeScreen(ConfigType type) {
+        this.minecraft.setScreen(new ConfigTypeScreen(this, this.selectedModId, type));
     }
 
     private void focusConfigEditBox(EditBox box) {
@@ -385,19 +329,6 @@ public class ConfigScreen extends Screen {
             return true;
         }
         return super.charTyped(codePoint, modifiers);
-    }
-
-    private Button createTypeButton(ConfigType type, int x, int y, int w, int h,
-                                    boolean enabled, Component disabledTooltip) {
-        Component label = Component.literal(type.name());
-        Button btn = Button.builder(label, b -> selectType(type))
-                .bounds(x, y, w, h)
-                .build();
-        btn.active = enabled;
-        if (!enabled && disabledTooltip != null) {
-            btn.setTooltip(Tooltip.create(disabledTooltip));
-        }
-        return btn;
     }
 
 
@@ -531,10 +462,6 @@ public class ConfigScreen extends Screen {
                 g.drawString(ConfigScreen.this.font, this.displayName,
                         left + 24, top + 8, 0xFFFFFFFF, true);
 
-                if (ConfigScreen.this.externalScreens.containsKey(this.modId)) {
-                    g.drawString(ConfigScreen.this.font, ">",
-                            left + width - 12, top + 8, 0xFFAAAAAA, false);
-                }
             }
 
             @Override

@@ -9,7 +9,13 @@
   "gui.craftcorelib.config.save": "Save",
   "gui.craftcorelib.config.discard": "Discard Changes",
   "gui.craftcorelib.config.unsaved_title": "Unsaved Changes",
-  "gui.craftcorelib.config.unsaved_message": "Unsaved Changes will be lost!"
+  "gui.craftcorelib.config.unsaved_message": "Unsaved Changes will be lost!",
+  "gui.craftcorelib.config.out_of_range": "Out of Range",
+  "gui.craftcorelib.config.below_min": "Below Minimun value",
+  "gui.craftcorelib.config.above_max": "Above Max value",
 
+  "gui.craftcorelib.config.type.client": "Client Configs",
+  "gui.craftcorelib.config.type.server": "Server Configs",
+  "gui.craftcorelib.config.type.common": "Common Configs"
 
 }
