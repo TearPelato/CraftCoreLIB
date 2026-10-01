@@ -101,9 +101,13 @@ public class ConfigTypeScreen extends Screen {
                 g.fill(left - 2, top - 1, left + width + 2, top + height + 1, 0x40FFFFFF);
             }
 
-            String display = this.category.getTitleKey() != null
-                    ? Component.translatable(this.category.getTitleKey()).getString()
-                    : this.category.getName();
+            String display = this.category.getName();
+            if (this.category.getTitleKey() != null) {
+                String translated = Component.translatable(this.category.getTitleKey()).getString();
+                if (!translated.equals(this.category.getTitleKey())) {
+                    display = translated;
+                }
+            }
 
             g.drawString(ConfigTypeScreen.this.font, "📁  " + display,
                     left + 8, top + 8, 0xFFFFFFFF, true);

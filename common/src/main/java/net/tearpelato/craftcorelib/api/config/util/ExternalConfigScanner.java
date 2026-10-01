@@ -43,22 +43,28 @@ public final class ExternalConfigScanner {
 
     private static void processFile(Path path) {
         String fileName = path.getFileName().toString();
+        String lowerName = fileName.toLowerCase(Locale.ROOT);
 
-        String modId;
         ConfigType type;
+        int suffixLen;
 
-        if (fileName.endsWith("-client.toml")) {
-            modId = fileName.substring(0, fileName.length() - "-client.toml".length());
+        if (lowerName.endsWith("-client.toml")) {
             type = ConfigType.CLIENT;
-        } else if (fileName.endsWith("-server.toml")) {
-            modId = fileName.substring(0, fileName.length() - "-server.toml".length());
+            suffixLen = "-client.toml".length();
+        } else if (lowerName.endsWith("-server.toml")) {
             type = ConfigType.SERVER;
-        } else if (fileName.endsWith(".toml")) {
-            modId = fileName.substring(0, fileName.length() - ".toml".length());
+            suffixLen = "-server.toml".length();
+        } else if (lowerName.endsWith("-common.toml")) {
             type = ConfigType.COMMON;
+            suffixLen = "-common.toml".length();
+        } else if (lowerName.endsWith(".toml")) {
+            type = ConfigType.COMMON;
+            suffixLen = ".toml".length();
         } else {
             return;
         }
+
+        String modId = fileName.substring(0, fileName.length() - suffixLen).toLowerCase(Locale.ROOT);
 
         boolean alreadyHasType = ConfigManager.getCategories(modId).stream()
                 .anyMatch(c -> c.getType() == type);
@@ -69,6 +75,9 @@ public final class ExternalConfigScanner {
             return;
         }
 
+        Map<String, ConfigCategory> categories = new LinkedHashMap<>();
+        Map<String, Object> runtimeValues = new LinkedHashMap<>();
+
         try (CommentedFileConfig fileConfig = CommentedFileConfig.builder(path)
                 .sync()
                 .autosave()
@@ -77,9 +86,6 @@ public final class ExternalConfigScanner {
 
             fileConfig.load();
 
-            Map<String, ConfigCategory> categories = new LinkedHashMap<>();
-            Map<String, Object> values = new LinkedHashMap<>();
-
             for (Map.Entry<String, Object> entry : fileConfig.valueMap().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
@@ -87,40 +93,47 @@ public final class ExternalConfigScanner {
 
                 if (value instanceof CommentedConfig subTable) {
                     ConfigCategory cat = categories.computeIfAbsent(key, k ->
-                            ConfigCategory.create(k, type)
-                                    .title("config." + modId + "." + k));
-                    flattenTable(subTable, cat, values, "");
+                            ConfigCategory.create(k, type));
+                    flattenTable(subTable, cat, runtimeValues, "");
                 } else if (value instanceof Boolean || value instanceof Number || value instanceof String) {
                     ConfigCategory general = categories.computeIfAbsent("general", k ->
-                            ConfigCategory.create("general", type)
-                                    .title("config." + modId + ".general"));
+                            ConfigCategory.create("general", type));
                     ConfigValue<Object> configValue = general.define(key, value);
-                    values.put(ConfigBinder.fullKey(general, configValue), value);
+                    runtimeValues.put(ConfigBinder.fullKey(general, configValue), value);
                 }
             }
+        } catch (Exception e) {
+            LOGGER.debug("Could not parse external config {}: {}", path.getFileName(), e.getMessage());
+            return;
+        }
 
-            categories.values().removeIf(c -> c.getValues().isEmpty());
-            if (categories.isEmpty()) {
-                return;
+        categories.values().removeIf(c -> c.getValues().isEmpty());
+        if (categories.isEmpty()) {
+            return;
+        }
+
+        List<ConfigCategory> catList = List.copyOf(categories.values());
+        ConfigManager.registerExternal(modId, catList);
+
+        final Path configPath = path;
+        ConfigBinder.bindAll(catList, new ConfigBackend() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> T get(ConfigCategory cat, ConfigValue<T> value) {
+                Object stored = runtimeValues.get(ConfigBinder.fullKey(cat, value));
+                return stored != null ? (T) stored : value.getDefault();
             }
 
-            List<ConfigCategory> catList = List.copyOf(categories.values());
-            for (ConfigCategory category : catList) {
-                ConfigManager.register(modId, category);
-            }
-
-            ConfigBinder.bindAll(catList, new ConfigBackend() {
-                @Override
-                @SuppressWarnings("unchecked")
-                public <T> T get(ConfigCategory cat, ConfigValue<T> value) {
-                    Object stored = values.get(ConfigBinder.fullKey(cat, value));
-                    return stored != null ? (T) stored : value.getDefault();
-                }
-
-                @Override
-                public <T> void set(ConfigCategory cat, ConfigValue<T> value, T newValue) {
-                    String fullKey = ConfigBinder.fullKey(cat, value);
-                    values.put(fullKey, newValue);
+            @Override
+            public <T> void set(ConfigCategory cat, ConfigValue<T> value, T newValue) {
+                String fullKey = ConfigBinder.fullKey(cat, value);
+                runtimeValues.put(fullKey, newValue);
+                try (CommentedFileConfig fileConfig = CommentedFileConfig.builder(configPath)
+                        .sync()
+                        .autosave()
+                        .writingMode(WritingMode.REPLACE)
+                        .build()) {
+                    fileConfig.load();
 
                     String writeKey = value.getKey();
                     if (!"general".equals(cat.getName())) {
@@ -128,14 +141,14 @@ public final class ExternalConfigScanner {
                     }
                     fileConfig.set(writeKey, newValue);
                     fileConfig.save();
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to write external config value {} to {}", fullKey, configPath, e);
                 }
-            });
+            }
+        });
 
-            LOGGER.debug("Registered external config for mod {} ({}) with {} categories",
-                    modId, type, catList.size());
-        } catch (Exception e) {
-            LOGGER.debug("Could not parse external config {}: {}", path.getFileName(), e.getMessage());
-        }
+        LOGGER.debug("Registered external config for mod {} ({}) with {} categories",
+                modId, type, catList.size());
     }
 
     private static void flattenTable(CommentedConfig table, ConfigCategory category,

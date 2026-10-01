@@ -15,6 +15,11 @@ public class ConfigManager {
         Services.CONFIG.register(modId, List.of(categories));
     }
 
+    public static void registerExternal(String modId, List<ConfigCategory> categories) {
+        REGISTERED.computeIfAbsent(modId, k -> new ArrayList<>())
+                .addAll(categories);
+    }
+
     public static List<ConfigCategory> getCategories(String modId) {
         return REGISTERED.getOrDefault(modId, List.of());
     }
