@@ -12,11 +12,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.tearpelato.craftcorelib.platform.services.IRegistriesHelper;
 
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 public class NeoForgeRegistriesHelper implements IRegistriesHelper {
+
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Block... blocks) {
-        return BlockEntityType.Builder.<T>of(factory::apply, blocks).build(null);
+    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+        return BlockEntityType.Builder.<T>of(factory::apply, blocks.get()).build(null);
     }
 
     @Override

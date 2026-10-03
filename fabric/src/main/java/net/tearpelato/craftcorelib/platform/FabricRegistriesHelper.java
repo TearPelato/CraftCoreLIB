@@ -13,11 +13,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.tearpelato.craftcorelib.platform.services.IRegistriesHelper;
 
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 public class FabricRegistriesHelper implements IRegistriesHelper {
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Block... blocks) {
-        return FabricBlockEntityTypeBuilder.<T>create(factory::apply, blocks).build();
+    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+        return FabricBlockEntityTypeBuilder.<T>create(factory::apply, blocks.get()).build();
     }
 
     @Override

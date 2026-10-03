@@ -83,8 +83,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.CREATIVE_MODE_TAB, id, supplier);
     }
 
-    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<? extends Block>... blocks) {
-        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, Arrays.stream(blocks).map(Supplier::get).toArray(Block[]::new)));
+    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
     }
 
     public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(ResourceLocation id, Supplier<T> supplier) {
