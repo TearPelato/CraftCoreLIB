@@ -3,12 +3,14 @@ package net.tearpelato.craftcorelib.platform;
 import net.tearpelato.craftcorelib.Constants;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 import net.tearpelato.craftcorelib.platform.services.IPlatformHelper;
+import net.tearpelato.craftcorelib.platform.services.IRegistriesHelper;
 
 import java.util.ServiceLoader;
 
 public class Services {
     public static final IPlatformHelper PLATFORM = load(IPlatformHelper.class);
     public static final IConfigHelper CONFIG = load(IConfigHelper.class);
+    public static final IRegistriesHelper REGISTRIES = load(IRegistriesHelper.class);
 
     public static <T> T load(Class<T> clazz) {
         final T loadedService = ServiceLoader.load(clazz).findFirst().orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));

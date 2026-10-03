@@ -1,26 +1,34 @@
 package net.tearpelato.craftcorelib.api.registry;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.tearpelato.craftcorelib.platform.Services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 public class ObjectRegistries<T> {
@@ -77,19 +85,19 @@ public class ObjectRegistries<T> {
         return new ObjectRegistries<>(BuiltInRegistries.CREATIVE_MODE_TAB, id, supplier);
     }
 
-    public static ObjectRegistries<BlockEntityType<?>> registerBlockEntity(ResourceLocation id, Supplier<BlockEntityType<?>> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, supplier);
+    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<?>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Block... blocks) {
+        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
     }
 
-    public static ObjectRegistries<EntityType<?>> registerEntity(ResourceLocation id, Supplier<EntityType<?>> supplier) {
+    public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(ResourceLocation id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ENTITY_TYPE, id, supplier);
     }
 
-    public static ObjectRegistries<MenuType<?>> registerMenu(ResourceLocation id, Supplier<MenuType<?>> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.MENU, id, supplier);
+    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenu(ResourceLocation id, BiFunction<Integer, Inventory, T> function) {
+        return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenu(function));
     }
 
-    public static ObjectRegistries<RecipeType<?>> registerRecipeType(ResourceLocation id) {
+    public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(ResourceLocation id) {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_TYPE, id, ()-> new RecipeType<>() {
             @Override
             public String toString() {
@@ -98,7 +106,7 @@ public class ObjectRegistries<T> {
         });
     }
 
-    public static ObjectRegistries<RecipeSerializer<?>> registerRecipeSerializer(ResourceLocation id, Supplier<RecipeSerializer<?>> supplier) {
+    public static <T extends RecipeSerializer<?>> ObjectRegistries<T> registerRecipeSerializer(ResourceLocation id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_SERIALIZER, id, supplier);
     }
 
