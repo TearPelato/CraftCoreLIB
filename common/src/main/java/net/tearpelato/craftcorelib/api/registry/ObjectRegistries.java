@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public class ObjectRegistries<T> {
+public class ObjectRegistries<T> implements Supplier<T> {
 
     private static final Map<String, List<ObjectRegistries<?>>> ENTRIES = new HashMap<>();
 
@@ -49,6 +49,7 @@ public class ObjectRegistries<T> {
                 .add(entry);
     }
 
+    @Override
     public T get() {
         if (this.instance == null)
             throw new IllegalStateException("Entry " + id + " has not been created yet");
