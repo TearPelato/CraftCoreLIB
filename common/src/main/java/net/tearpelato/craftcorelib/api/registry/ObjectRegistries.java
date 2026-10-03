@@ -24,10 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.tearpelato.craftcorelib.platform.Services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -85,8 +82,8 @@ public class ObjectRegistries<T> {
         return new ObjectRegistries<>(BuiltInRegistries.CREATIVE_MODE_TAB, id, supplier);
     }
 
-    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Block... blocks) {
-        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
+    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<? extends Block>... blocks) {
+        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, Arrays.stream(blocks).map(Supplier::get).toArray(Block[]::new)));
     }
 
     public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(ResourceLocation id, Supplier<T> supplier) {
