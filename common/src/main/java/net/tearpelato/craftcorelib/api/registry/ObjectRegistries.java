@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
@@ -93,6 +94,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
 
     public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenu(ResourceLocation id, BiFunction<Integer, Inventory, T> function) {
         return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenu(function));
+    }
+
+    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenuData(ResourceLocation id, BiFunction<Integer, Inventory, T> function, FriendlyByteBuf data) {
+        return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenuData(function, data));
     }
 
     public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(ResourceLocation id) {
