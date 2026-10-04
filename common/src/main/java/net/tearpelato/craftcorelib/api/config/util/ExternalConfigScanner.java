@@ -46,32 +46,37 @@ public final class ExternalConfigScanner {
         String lowerName = fileName.toLowerCase(Locale.ROOT);
 
         ConfigType type;
-        int suffixLen;
+        String baseName;
 
         if (lowerName.endsWith("-client.toml")) {
             type = ConfigType.CLIENT;
-            suffixLen = "-client.toml".length();
+            baseName = fileName.substring(0, fileName.length() - "-client.toml".length());
         } else if (lowerName.endsWith("-server.toml")) {
             type = ConfigType.SERVER;
-            suffixLen = "-server.toml".length();
+            baseName = fileName.substring(0, fileName.length() - "-server.toml".length());
         } else if (lowerName.endsWith("-common.toml")) {
             type = ConfigType.COMMON;
-            suffixLen = "-common.toml".length();
-        } else if (lowerName.endsWith(".toml")) {
-            type = ConfigType.COMMON;
-            suffixLen = ".toml".length();
+            baseName = fileName.substring(0, fileName.length() - "-common.toml".length());
         } else {
-            return;
+            type = ConfigType.COMMON;
+            baseName = fileName.substring(0, fileName.length() - ".toml".length());
         }
 
-        String modId = fileName.substring(0, fileName.length() - suffixLen).toLowerCase(Locale.ROOT);
-
-        boolean alreadyHasType = ConfigManager.getCategories(modId).stream()
-                .anyMatch(c -> c.getType() == type);
-        if (alreadyHasType) {
-            return;
+        String extractedModId = baseName.toLowerCase(Locale.ROOT);
+        int lastDash = extractedModId.lastIndexOf('-');
+        if (lastDash > 0) {
+            String candidate = extractedModId.substring(0, lastDash);
+            if (Services.PLATFORM.isModLoaded(candidate)) {
+                extractedModId = candidate;
+            }
         }
-        if (!Services.PLATFORM.isModLoaded(modId)) {
+
+        final String modId;
+        if (Services.PLATFORM.isModLoaded(extractedModId)) {
+            modId = extractedModId;
+        } else if (Services.PLATFORM.isModLoaded(baseName.toLowerCase(Locale.ROOT))) {
+            modId = baseName.toLowerCase(Locale.ROOT);
+        } else {
             return;
         }
 
@@ -135,8 +140,8 @@ public final class ExternalConfigScanner {
                         .build()) {
                     fileConfig.load();
 
-                    String writeKey = value.getKey();
-                    if (!"general".equals(cat.getName())) {
+                    String writeKey = cat.getName() + "." + value.getKey();
+                    if (value.getKey().contains(".")) {
                         writeKey = cat.getName() + "." + value.getKey();
                     }
                     fileConfig.set(writeKey, newValue);
@@ -147,8 +152,9 @@ public final class ExternalConfigScanner {
             }
         });
 
-        LOGGER.debug("Registered external config for mod {} ({}) with {} categories",
-                modId, type, catList.size());
+        LOGGER.debug("Registered external config for mod {} (file: {}, type: {}) with {} categories: {}",
+                modId, fileName, type, catList.size(),
+                catList.stream().map(ConfigCategory::getName).toList());
     }
 
     private static void flattenTable(CommentedConfig table, ConfigCategory category,

@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigManager;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
+import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
 import net.tearpelato.craftcorelib.platform.Services;
 
 import java.util.List;
@@ -65,7 +66,6 @@ public class ConfigTypeScreen extends Screen {
         }
     }
 
-
     private class CategoryList extends ObjectSelectionList<CategoryEntry> {
 
         public CategoryList(Minecraft mc, int width, int height, int y, int itemHeight) {
@@ -88,28 +88,33 @@ public class ConfigTypeScreen extends Screen {
     private class CategoryEntry extends ObjectSelectionList.Entry<CategoryEntry> {
 
         private final ConfigCategory category;
+        private final String displayName;
 
         CategoryEntry(ConfigCategory category) {
             this.category = category;
+
+            String display = category.getName();
+            if (category.getTitleKey() != null) {
+                String translated = Component.translatable(category.getTitleKey()).getString();
+                if (!translated.equals(category.getTitleKey())) {
+                    display = translated;
+                } else {
+                    display = ConfigBinder.toTitleCase(category.getName());
+                }
+            } else {
+                display = ConfigBinder.toTitleCase(category.getName());
+            }
+            this.displayName = display;
         }
 
         @Override
         public void render(GuiGraphics g, int index, int top, int left, int width, int height,
                            int mouseX, int mouseY, boolean hovering, float partialTick) {
 
-            if (hovering) {
-                g.fill(left - 2, top - 1, left + width + 2, top + height + 1, 0x40FFFFFF);
-            }
+            int bgColor = hovering ? 0x80FFFFFF : 0x40000000;
+            g.fill(left - 2, top - 1, left + width + 2, top + height + 1, bgColor);
 
-            String display = this.category.getName();
-            if (this.category.getTitleKey() != null) {
-                String translated = Component.translatable(this.category.getTitleKey()).getString();
-                if (!translated.equals(this.category.getTitleKey())) {
-                    display = translated;
-                }
-            }
-
-            g.drawString(ConfigTypeScreen.this.font, "📁  " + display,
+            g.drawString(ConfigTypeScreen.this.font, "📁  " + this.displayName,
                     left + 8, top + 8, 0xFFFFFFFF, true);
         }
 
@@ -123,7 +128,7 @@ public class ConfigTypeScreen extends Screen {
 
         @Override
         public Component getNarration() {
-            return Component.literal(this.category.getName());
+            return Component.literal(this.displayName);
         }
     }
 }

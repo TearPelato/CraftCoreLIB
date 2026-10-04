@@ -13,8 +13,9 @@ public class ConfigValue<T> {
     private T min, max;
     private Supplier<T> getter;
     private Consumer<T> setter;
+    private EditorType editorType = EditorType.AUTO;
 
-   public ConfigValue(ConfigCategory parent, String key, T defaultValue) {
+    public ConfigValue(ConfigCategory parent, String key, T defaultValue) {
         this.parent = parent;
         this.key = key;
         this.defaultValue = defaultValue;
@@ -33,6 +34,26 @@ public class ConfigValue<T> {
     public ConfigValue<T> range(T min, T max) {
         this.min = min;
         this.max = max;
+        return this;
+    }
+
+    public ConfigValue<T> box() {
+        this.editorType = EditorType.BOX;
+        return this;
+    }
+
+    public ConfigValue<T> slider() {
+        this.editorType = EditorType.SLIDER;
+        return this;
+    }
+
+    public ConfigValue<T> both() {
+        this.editorType = EditorType.BOTH;
+        return this;
+    }
+
+    public ConfigValue<T> auto() {
+        this.editorType = EditorType.AUTO;
         return this;
     }
 
@@ -75,5 +96,16 @@ public class ConfigValue<T> {
 
     public ConfigCategory getParent() {
         return parent;
+    }
+
+    public EditorType getEditorType() {
+        return editorType;
+    }
+
+    public enum EditorType {
+        AUTO,
+        BOX,
+        SLIDER,
+        BOTH
     }
 }

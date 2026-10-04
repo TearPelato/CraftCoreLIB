@@ -4,10 +4,7 @@ import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
 import net.tearpelato.craftcorelib.api.config.ConfigValue;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public final class ConfigBinder {
@@ -68,5 +65,23 @@ public final class ConfigBinder {
 
     public static Object clampRaw(Object rawValue, ConfigValue<?> configValue) {
         return clamp(rawValue, (ConfigValue<Object>) configValue);
+    }
+
+    public static String toTitleCase(String input) {
+        if (input == null || input.isEmpty()) return input;
+
+
+        String[] parts = input.replace('_', ' ').replace('-', ' ').split("\\s+");
+        StringBuilder sb = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                sb.append(part.substring(1).toLowerCase(Locale.ROOT));
+            }
+        }
+        return sb.toString();
     }
 }

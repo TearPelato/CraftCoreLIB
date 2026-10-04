@@ -16,6 +16,7 @@ public class ConfigCategory {
         this.type = type;
     }
 
+    //Create a category pre-set to common
     public static ConfigCategory create(String name) {
         return new ConfigCategory(name, ConfigType.COMMON);
     }
