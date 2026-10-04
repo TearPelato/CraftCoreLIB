@@ -24,8 +24,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.tearpelato.craftcorelib.platform.Services;
+import org.apache.commons.lang3.function.TriFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -96,8 +100,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenu(function));
     }
 
-    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenuData(ResourceLocation id, BiFunction<Integer, Inventory, T> function, FriendlyByteBuf data) {
-        return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenuData(function, data));
+    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenuData(ResourceLocation id, TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
+        return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenuData(function));
     }
 
     public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(ResourceLocation id) {
