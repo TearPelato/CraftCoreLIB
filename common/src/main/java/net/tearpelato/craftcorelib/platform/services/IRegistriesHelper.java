@@ -2,6 +2,8 @@ package net.tearpelato.craftcorelib.platform.services;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -21,4 +23,6 @@ public interface IRegistriesHelper {
     <T extends AbstractContainerMenu> MenuType<T> createMenu(BiFunction<Integer, Inventory, T> function);
 
     <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf,T> function);
+
+    void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos);
 }

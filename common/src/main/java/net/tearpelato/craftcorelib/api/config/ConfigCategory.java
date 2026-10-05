@@ -10,6 +10,8 @@ public class ConfigCategory {
     private String titleKey;
     private String commentKey;
     private final List<ConfigValue<?>> values = new ArrayList<>();
+    private final List<ConfigCategory> children = new ArrayList<>();
+    private ConfigCategory parent;
 
     private ConfigCategory(String name, ConfigType type) {
         this.name = name;
@@ -23,6 +25,20 @@ public class ConfigCategory {
 
     public static ConfigCategory create(String name, ConfigType type) {
         return new ConfigCategory(name, type);
+    }
+
+    public ConfigCategory child(String name) {
+        ConfigCategory c = new ConfigCategory(name, this.type);
+        c.parent = this;
+        children.add(c);
+        return c;
+    }
+    public List<ConfigCategory> getChildren() {
+        return children;
+    }
+
+    public String getPath() {
+        return parent == null ? name : parent.getPath() + "." + name;
     }
 
     public ConfigCategory title(String translationKey) {
