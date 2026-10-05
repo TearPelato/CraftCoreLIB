@@ -15,7 +15,7 @@ public class CraftCoreLIB {
     /**
      * Allows the opening of {@link ObjectRegistries#registerMenuData(ResourceLocation, TriFunction)}
      * */
-    public void openMenuData(ServerPlayer player, @Nullable MenuProvider provider, BlockPos pos) {
+    public static void openMenuData(ServerPlayer player, @Nullable MenuProvider provider, BlockPos pos) {
          Services.REGISTRIES.openMenuData(player, provider, pos);
     }
 
