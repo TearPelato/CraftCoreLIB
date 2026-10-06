@@ -76,4 +76,12 @@ public class ConfigCategory {
     public List<ConfigValue<?>> getValues() {
         return values;
     }
+
+    public boolean hasChildren() {
+        return !children.isEmpty();
+    }
+
+    public boolean isRoot() {
+        return parent == null;
+    }
 }

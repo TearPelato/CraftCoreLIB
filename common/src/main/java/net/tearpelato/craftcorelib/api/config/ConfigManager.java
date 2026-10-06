@@ -27,4 +27,10 @@ public class ConfigManager {
     public static Set<String> getRegisteredModIds() {
         return REGISTERED.keySet();
     }
+
+    public static List<ConfigCategory> getRootCategories(String modId) {
+        return getCategories(modId).stream()
+                .filter(ConfigCategory::isRoot)
+                .toList();
+    }
 }

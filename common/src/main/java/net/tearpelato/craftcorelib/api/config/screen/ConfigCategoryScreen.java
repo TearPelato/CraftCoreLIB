@@ -7,39 +7,40 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
-import net.tearpelato.craftcorelib.api.config.ConfigManager;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
 import net.tearpelato.craftcorelib.api.config.util.ConfigBinder;
 import net.tearpelato.craftcorelib.platform.Services;
 
 import java.util.List;
 
-public class ConfigTypeScreen extends Screen {
-
+public class ConfigCategoryScreen extends Screen {
     private final Screen parent;
     private final String modId;
     private final ConfigType type;
+    private final ConfigCategory category;
     private CategoryList list;
 
-    public ConfigTypeScreen(Screen parent, String modId, ConfigType type) {
-        super(Component.literal(Services.PLATFORM.getModName(modId) + " › " + type.name()));
+    public ConfigCategoryScreen(Screen parent, String modId, ConfigType type, ConfigCategory category) {
+        super(Component.literal(
+                Services.PLATFORM.getModName(modId) + " › " + type.name()
+                        + " › " + ConfigBinder.toTitleCase(category.getName())));
         this.parent = parent;
         this.modId = modId;
         this.type = type;
+        this.category = category;
     }
 
     @Override
     protected void init() {
         super.init();
-
-        List<ConfigCategory> cats = ConfigManager.getCategories(this.modId).stream()
-                .filter(c -> c.getType() == this.type)
-                .toList();
+        
+        List<ConfigCategory> children = this.category.getChildren();
 
         this.list = new CategoryList(this.minecraft, this.width - 40, this.height - 70, 40, 28);
-        this.list.setX(20);
-        this.list.setCategories(cats);
+        this.list.setCategories(children);
         this.addRenderableWidget(this.list);
+
+
 
         this.addRenderableWidget(Button.builder(Component.translatable("gui.back"), b -> onClose())
                 .bounds(this.width / 2 - 100, this.height - 28, 200, 20)
@@ -66,7 +67,7 @@ public class ConfigTypeScreen extends Screen {
         }
     }
 
-    private class CategoryList extends ObjectSelectionList<CategoryEntry> {
+    private class CategoryList extends ObjectSelectionList<ConfigCategoryScreen.CategoryEntry> {
 
         public CategoryList(Minecraft mc, int width, int height, int y, int itemHeight) {
             super(mc, width, height, y, itemHeight);
@@ -75,7 +76,7 @@ public class ConfigTypeScreen extends Screen {
         public void setCategories(List<ConfigCategory> categories) {
             this.clearEntries();
             for (ConfigCategory cat : categories) {
-                this.addEntry(new CategoryEntry(cat));
+                this.addEntry(new ConfigCategoryScreen.CategoryEntry(cat));
             }
         }
 
@@ -85,7 +86,7 @@ public class ConfigTypeScreen extends Screen {
         }
     }
 
-    private class CategoryEntry extends ObjectSelectionList.Entry<CategoryEntry> {
+    private class CategoryEntry extends ObjectSelectionList.Entry<ConfigCategoryScreen.CategoryEntry> {
 
         private final ConfigCategory category;
         private final String displayName;
@@ -114,27 +115,15 @@ public class ConfigTypeScreen extends Screen {
             int bgColor = hovering ? 0x80FFFFFF : 0x40000000;
             g.fill(left - 2, top - 1, left + width + 2, top + height + 1, bgColor);
 
-            g.drawString(ConfigTypeScreen.this.font, "📁  " + this.displayName,
+            g.drawString(ConfigCategoryScreen.this.font, "📁  " + this.displayName,
                     left + 8, top + 8, 0xFFFFFFFF, true);
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (this.category.hasChildren()) {
-                ConfigTypeScreen.this.minecraft.setScreen(
-                        new ConfigCategoryScreen(
-                                ConfigTypeScreen.this,
-                                ConfigTypeScreen.this.modId,
-                                ConfigTypeScreen.this.type,
-                                this.category));
-            } else {
-                ConfigTypeScreen.this.minecraft.setScreen(
-                        new ConfigValuesScreen(
-                                ConfigTypeScreen.this,
-                                ConfigTypeScreen.this.modId,
-                                ConfigTypeScreen.this.type,
-                                this.category));
-            }
+            ConfigCategoryScreen.this.minecraft.setScreen(
+                    new ConfigValuesScreen(ConfigCategoryScreen.this, ConfigCategoryScreen.this.modId,
+                            ConfigCategoryScreen.this.type, this.category));
             return true;
         }
 

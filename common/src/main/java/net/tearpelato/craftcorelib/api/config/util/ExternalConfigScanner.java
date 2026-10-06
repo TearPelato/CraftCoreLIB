@@ -101,10 +101,10 @@ public final class ExternalConfigScanner {
                             ConfigCategory.create(k, type));
                     flattenTable(subTable, cat, runtimeValues, "");
                 } else if (value instanceof Boolean || value instanceof Number || value instanceof String) {
-                    ConfigCategory general = categories.computeIfAbsent("general", k ->
-                            ConfigCategory.create("general", type));
-                    ConfigValue<Object> configValue = general.define(key, value);
-                    runtimeValues.put(ConfigBinder.fullKey(general, configValue), value);
+                    ConfigCategory rootCat = categories.computeIfAbsent(baseName, k ->
+                            ConfigCategory.create(k, type));
+                    ConfigValue<Object> configValue = rootCat.define(key, value);
+                    runtimeValues.put(ConfigBinder.fullKey(rootCat, configValue), value);
                 }
             }
         } catch (Exception e) {
@@ -160,14 +160,16 @@ public final class ExternalConfigScanner {
     private static void flattenTable(CommentedConfig table, ConfigCategory category,
                                      Map<String, Object> values, String prefix) {
         for (Map.Entry<String, Object> entry : table.valueMap().entrySet()) {
-            String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            String key = entry.getKey();
             Object value = entry.getValue();
             if (value == null) continue;
 
             if (value instanceof CommentedConfig nested) {
-                flattenTable(nested, category, values, key);
+                ConfigCategory child = category.child(key);
+                flattenTable(nested, child, values, "");
             } else if (value instanceof Boolean || value instanceof Number || value instanceof String) {
-                ConfigValue<Object> configValue = category.define(key, value);
+                String fullKey = prefix.isEmpty() ? key : prefix + "." + key;
+                ConfigValue<Object> configValue = category.define(fullKey, value);
                 values.put(ConfigBinder.fullKey(category, configValue), value);
             }
         }
