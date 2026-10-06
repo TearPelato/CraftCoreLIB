@@ -1,6 +1,6 @@
 package net.tearpelato.craftcorelib.platform;
 
-import net.tearpelato.craftcorelib.Constants;
+import net.tearpelato.craftcorelib.CraftCoreLIBConstants;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 import net.tearpelato.craftcorelib.platform.services.IPlatformHelper;
 import net.tearpelato.craftcorelib.platform.services.IRegistriesHelper;
@@ -14,7 +14,7 @@ public class Services {
 
     public static <T> T load(Class<T> clazz) {
         final T loadedService = ServiceLoader.load(clazz).findFirst().orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));
-        Constants.LOG.debug("Loaded {} for service {}", loadedService, clazz);
+        CraftCoreLIBConstants.LOG.debug("Loaded {} for service {}", loadedService, clazz);
         return loadedService;
     }
 }

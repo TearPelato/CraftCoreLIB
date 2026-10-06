@@ -7,7 +7,7 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.tearpelato.craftcorelib.Constants;
+import net.tearpelato.craftcorelib.CraftCoreLIBConstants;
 import net.tearpelato.craftcorelib.api.config.screen.ConfigScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,8 +28,8 @@ public class TitleScreenMixin {
         AbstractWidget singleplayerButton = craftcorelib$findButton(self);
         if (singleplayerButton == null) return;
 
-        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "config_icon");
-        ResourceLocation iconHighlighted = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "config_icon_highlighted");
+        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon");
+        ResourceLocation iconHighlighted = ResourceLocation.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon_highlighted");
         WidgetSprites sprites = new WidgetSprites(icon, iconHighlighted);
 
         int buttonSize = 20;

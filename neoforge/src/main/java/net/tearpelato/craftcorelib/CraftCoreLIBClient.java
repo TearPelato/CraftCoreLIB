@@ -2,13 +2,9 @@ package net.tearpelato.craftcorelib;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
 import net.tearpelato.craftcorelib.api.network.Network;
@@ -16,7 +12,7 @@ import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
 import net.tearpelato.craftcorelib.network.NeoForgeNetworkRegistrar;
 import net.tearpelato.craftcorelib.network.NeoForgeNetworkSender;
 
-@EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = CraftCoreLIBConstants.MOD_ID, value = Dist.CLIENT)
 public class CraftCoreLIBClient {
 
     @SubscribeEvent
