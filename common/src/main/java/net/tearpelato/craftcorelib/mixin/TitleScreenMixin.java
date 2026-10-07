@@ -6,7 +6,7 @@ import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.tearpelato.craftcorelib.CraftCoreLIBConstants;
 import net.tearpelato.craftcorelib.api.config.screen.ConfigScreen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(TitleScreen.class)
 public class TitleScreenMixin {
@@ -22,20 +23,20 @@ public class TitleScreenMixin {
     private AbstractWidget craftcorelib$configButton;
 
     @Inject(method = "createNormalMenuOptions", at = @At("RETURN"))
-    private void craftcorelib$addConfigButton(int y, int rowHeight, CallbackInfo ci) {
+    private void craftcorelib$addConfigButton(int topPos, int spacing, CallbackInfoReturnable<Integer> cir) {
         TitleScreen self = (TitleScreen) (Object) this;
 
         AbstractWidget singleplayerButton = craftcorelib$findButton(self);
         if (singleplayerButton == null) return;
 
-        ResourceLocation icon = ResourceLocation.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon");
-        ResourceLocation iconHighlighted = ResourceLocation.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon_highlighted");
+        Identifier icon = Identifier.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon");
+        Identifier iconHighlighted = Identifier.fromNamespaceAndPath(CraftCoreLIBConstants.MOD_ID, "config_icon_highlighted");
         WidgetSprites sprites = new WidgetSprites(icon, iconHighlighted);
 
         int buttonSize = 20;
-        int spacing = 4;
+        int spacings = 4;
 
-        int x = singleplayerButton.getX() + singleplayerButton.getWidth() + spacing;
+        int x = singleplayerButton.getX() + singleplayerButton.getWidth() + spacings;
         int by = singleplayerButton.getY() + (singleplayerButton.getHeight() - buttonSize) / 2;
 
         this.craftcorelib$configButton = new ImageButton(

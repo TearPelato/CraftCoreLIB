@@ -1,6 +1,6 @@
 plugins {
     id 'multiloader-loader'
-    id 'fabric-loom'
+    id 'net.fabricmc.fabric-loom'
 }
 
 repositories {
@@ -20,23 +20,19 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
-    }
-    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    modImplementation "curse.maven:configured-457570:7276575"
-    modImplementation "curse.maven:menulogue-682371:5705587"
-    modImplementation "curse.maven:catalogue-459701:6926812"
+    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+ /* implementation "curse.maven:configured-457570:7276575"
+    implementation "curse.maven:menulogue-682371:5705587"
+    implementation "curse.maven:catalogue-459701:6926812"*/
 
     implementation "com.electronwill.night-config:core:3.6.7"
     implementation "com.electronwill.night-config:toml:3.6.7"
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
-    //modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
-    modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
+    //implementation "com.terraformersmc:modmenu:${modmenu_version}"
+  //  modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
 }
 
 loom {

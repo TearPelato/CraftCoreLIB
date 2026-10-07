@@ -3,17 +3,21 @@ package net.tearpelato.craftcorelib.api.config.screen;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigManager;
@@ -32,9 +36,9 @@ public class ConfigScreen extends Screen {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private record Target(String modId, ConfigType type) {}
-    private record Icon(ResourceLocation location, int width, int height) {}
+    private record Icon(Identifier location, int width, int height) {}
 
-    private static final Icon FALLBACK_ICON = new Icon(ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png"), 64, 64);
+    private static final Icon FALLBACK_ICON = new Icon(Identifier.withDefaultNamespace("textures/misc/unknown_pack.png"), 64, 64);
 
     private final Screen parent;
 
@@ -314,27 +318,27 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
         if (this.activeConfigEditBox != null && this.getFocused() == this.entryList
-                && this.activeConfigEditBox.keyPressed(keyCode, scanCode, modifiers)) {
+                && this.activeConfigEditBox.keyPressed(event)) {
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char codePoint, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
         if (this.activeConfigEditBox != null && this.getFocused() == this.entryList
-                && this.activeConfigEditBox.charTyped(codePoint, modifiers)) {
+                && this.activeConfigEditBox.charTyped(event)) {
             return true;
         }
-        return super.charTyped(codePoint, modifiers);
+        return super.charTyped(event);
     }
 
 
     private Icon resolveIcon(String modId) {
         return this.iconCache.computeIfAbsent(modId, id -> {
-            ResourceLocation location = null;
+            Identifier location = null;
             try {
                 location = Services.PLATFORM.getModIcon(id);
             } catch (Exception ignored) {}
@@ -348,32 +352,31 @@ public class ConfigScreen extends Screen {
     }
 
 
-    private Icon probeIcon(ResourceLocation location) {
-        AbstractTexture registered = this.minecraft.getTextureManager().getTexture(location, null);
+    private Icon probeIcon(Identifier identifier) {
+        AbstractTexture registered = this.minecraft.getTextureManager().getTexture(identifier);
         if (registered instanceof DynamicTexture dyn && dyn.getPixels() != null) {
-            return new Icon(location, dyn.getPixels().getWidth(), dyn.getPixels().getHeight());
+            return new Icon(identifier, dyn.getPixels().getWidth(), dyn.getPixels().getHeight());
         }
 
-        Optional<Resource> resource = this.minecraft.getResourceManager().getResource(location);
+        Optional<Resource> resource = this.minecraft.getResourceManager().getResource(identifier);
         if (resource.isPresent()) {
             try (InputStream in = resource.get().open(); NativeImage image = NativeImage.read(in)) {
-                return new Icon(location, image.getWidth(), image.getHeight());
+                return new Icon(identifier, image.getWidth(), image.getHeight());
             } catch (IOException ignored) {}
         }
         return null;
     }
 
-    private void drawIcon(GuiGraphics g, String modId, int x, int y, int size) {
+    private void drawIcon(GuiGraphicsExtractor g, String modId, int x, int y, int size) {
         Icon icon = resolveIcon(modId);
-        g.blit(icon.location(), x, y, size, size, 0f, 0f,
+        g.blit(RenderPipelines.GUI_TEXTURED, icon.location(), x, y, 0f, 0f,
                 icon.width(), icon.height(), icon.width(), icon.height());
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-
-        graphics.drawString(this.font, this.title, 10, 10, 0xFFFFFF, true);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        graphics.text(this.font, this.title, 10, 10, 0xFFFFFF, true);
 
         if (this.selectedModId != null) {
             int logoX = LEFT_PANEL_WIDTH + 16;
@@ -383,20 +386,22 @@ public class ConfigScreen extends Screen {
             drawIcon(graphics, this.selectedModId, logoX, logoY, logoSize);
 
             String displayName = Services.PLATFORM.getModName(this.selectedModId);
-            graphics.drawString(this.font, displayName,
+            graphics.text(this.font, displayName,
                     logoX + logoSize + 8, logoY + 10,
                     0xFFFFFFFF, true);
         }
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(graphics, partialTick);
+            this.extractPanorama(graphics, a);
         } else {
-            this.renderTransparentBackground(graphics);
+            this.extractTransparentBackground(graphics);
         }
     }
+
+
 
     public class ModListWidget extends ObjectSelectionList<ModListWidget.Entry> {
 
@@ -441,31 +446,29 @@ public class ConfigScreen extends Screen {
             }
 
             @Override
-            public void render(GuiGraphics g, int index, int top, int left, int width, int height,
-                               int mouseX, int mouseY, boolean hovering, float partialTick) {
-
+            public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
                 boolean selected = this.modId.equals(ConfigScreen.this.selectedModId);
 
-                int x1 = left - 2 + 1;
-                int x2 = left - 2 + width - 1;
-                int y1 = top - 2 + 1;
-                int y2 = top + height + 2 - 1;
+                int x1 = i - 2 + 1;
+                int x2 = i - 2 + width - 1;
+                int y1 = i1 - 2 + 1;
+                int y2 = i1 + height + 2 - 1;
 
                 if (selected) {
-                    g.fill(x1, y1, x2, y2, 0x80FFFFFF);
-                } else if (hovering) {
-                    g.fill(x1, y1, x2, y2, 0x40FFFFFF);
+                    guiGraphicsExtractor.fill(x1, y1, x2, y2, 0x80FFFFFF);
+                } else if (b) {
+                    guiGraphicsExtractor.fill(x1, y1, x2, y2, 0x40FFFFFF);
                 }
 
-                ConfigScreen.this.drawIcon(g, this.modId, left + 4, top + 4, 16);
+                ConfigScreen.this.drawIcon(guiGraphicsExtractor, this.modId, i + 4, i1 + 4, 16);
 
-                g.drawString(ConfigScreen.this.font, this.displayName,
-                        left + 24, top + 8, 0xFFFFFFFF, true);
+                guiGraphicsExtractor.text(ConfigScreen.this.font, this.displayName,
+                        i + 24, i1 + 8, 0xFFFFFFFF, true);
 
             }
 
             @Override
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
                 ConfigScreen.this.selectMod(this.modId);
                 return true;
             }
@@ -528,9 +531,20 @@ public class ConfigScreen extends Screen {
                             }
                     ).size(50, 18).build();
                 } else if (current instanceof Number) {
-                    this.editBox = new EditBox(ConfigScreen.this.font, 0, 0, 80, 18, Component.empty());
+                    this.editBox = new EditBox(ConfigScreen.this.font, 0, 0, 80, 18, Component.empty()){
+                        @Override
+                        public void insertText(String input) {
+                            String old = getValue();
+                            int cursor = getCursorPosition();
+                            super.insertText(input);
+                            if (!getValue().matches("-?\\d*\\.?\\d*")) {
+                                setValue(old);
+                                setCursorPosition(cursor);
+                                setHighlightPos(cursor);
+                            }
+                        }
+                    };
                     this.editBox.setValue(String.valueOf(current));
-                    this.editBox.setFilter(s -> s.matches("-?\\d*\\.?\\d*") || s.isEmpty());
                     this.editBox.setResponder(text -> {
                         if (text.isEmpty()) return;
                         try {
@@ -550,41 +564,39 @@ public class ConfigScreen extends Screen {
             }
 
             @Override
-            public void render(GuiGraphics g, int index, int top, int left, int width, int height,
-                               int mouseX, int mouseY, boolean hovering, float partialTick) {
-
+            public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
                 String nameKey = this.value.getNameKey();
                 Component name = nameKey != null
                         ? Component.translatable(nameKey)
                         : Component.literal(this.value.getKey());
 
-                g.drawString(ConfigScreen.this.font, name, left + 4, top + 6, 0xFFFFFFFF, true);
+                guiGraphicsExtractor.text(ConfigScreen.this.font, name, i + 4, i1 + 6, 0xFFFFFFFF, true);
 
                 if (this.unavailable) {
-                    g.drawString(ConfigScreen.this.font,
+                    guiGraphicsExtractor.text(ConfigScreen.this.font,
                             Component.translatable("gui.craftcorelib.config.unavailable"),
-                            left + width - 130, top + 6, 0xFF888888, false);
+                            i + width - 130, i1 + 6, 0xFF888888, false);
                     return;
                 }
 
                 if (this.editBox != null) {
-                    this.editBox.setX(left + width - 90);
-                    this.editBox.setY(top + 3);
-                    this.editBox.render(g, mouseX, mouseY, partialTick);
+                    this.editBox.setX(i + width - 90);
+                    this.editBox.setY(i1 + 3);
+                    this.editBox.extractRenderState(guiGraphicsExtractor, i, i1, v);
                 } else if (this.toggleButton != null) {
-                    this.toggleButton.setX(left + width - 60);
-                    this.toggleButton.setY(top + 3);
-                    this.toggleButton.render(g, mouseX, mouseY, partialTick);
+                    this.toggleButton.setX(i + width - 60);
+                    this.toggleButton.setY(i1 + 3);
+                    this.toggleButton.extractRenderState(guiGraphicsExtractor, i, i1, v);
                 }
             }
 
             @Override
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                if (this.editBox != null && this.editBox.mouseClicked(mouseX, mouseY, button)) {
+            public boolean mouseClicked(MouseButtonEvent event, boolean mouseClicked) {
+                if (this.editBox != null && this.editBox.mouseClicked(event, mouseClicked)) {
                     ConfigScreen.this.focusConfigEditBox(this.editBox);
                     return true;
                 }
-                if (this.toggleButton != null && this.toggleButton.mouseClicked(mouseX, mouseY, button)) {
+                if (this.toggleButton != null && this.toggleButton.mouseClicked(event, mouseClicked)) {
                     return true;
                 }
                 return false;

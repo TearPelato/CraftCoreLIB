@@ -1,7 +1,6 @@
 package net.tearpelato.craftcorelib.platform.services;
 
-import net.minecraft.resources.ResourceLocation;
-import net.tearpelato.craftcorelib.api.config.ConfigType;
+import net.minecraft.resources.Identifier;
 
 public interface IPlatformHelper {
 
@@ -15,6 +14,6 @@ public interface IPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
-    ResourceLocation getModIcon(String modId);
+    Identifier getModIcon(String modId);
     String getModName(String modId);
 }

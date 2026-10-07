@@ -18,7 +18,7 @@ public class CraftCoreLibClient implements ClientModInitializer {
 
         ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 
-            ScreenEvents.beforeRender(screen).register((screen1, graphics, mouseX, mouseY, partialTick) -> {
+            ScreenEvents.beforeExtract(screen).register((screen1, graphics, mouseX, mouseY, partialTick) -> {
                 ScreenRenderEvent.ON_RENDER_BACKGROUND.post().render(screen1, graphics, mouseX, mouseY);
             });
 

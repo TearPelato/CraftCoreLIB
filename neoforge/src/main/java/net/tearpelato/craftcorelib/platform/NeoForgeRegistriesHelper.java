@@ -23,7 +23,7 @@ public class NeoForgeRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
-        return BlockEntityType.Builder.<T>of(factory::apply, blocks.get()).build(null);
+        return new BlockEntityType<>(factory::apply, blocks.get());
     }
 
     @Override

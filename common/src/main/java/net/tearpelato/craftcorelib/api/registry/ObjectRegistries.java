@@ -6,7 +6,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
@@ -37,12 +37,12 @@ public class ObjectRegistries<T> implements Supplier<T> {
 
     private static final Map<String, List<ObjectRegistries<?>>> ENTRIES = new HashMap<>();
 
-    protected final ResourceLocation id;
+    protected final Identifier id;
     protected final Supplier<T> supplier;
     protected final Registry<? super T> registry;
     private T instance;
 
-    public ObjectRegistries(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier) {
+    public ObjectRegistries(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
         this.id = id;
         this.supplier = supplier;
         this.registry = registry;
@@ -72,7 +72,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
      * Creating a custom block with proper Item, getting the Id, and the supplier function to define the Block Properties
      * */
 
-    public static <T extends Block> ObjectRegistries<T> registerBlock(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends Block> ObjectRegistries<T> registerBlock(Identifier id, Supplier<T> supplier) {
         return new BlockRegistries<>(BuiltInRegistries.BLOCK, id, supplier, t -> new BlockItem(t, new Item.Properties()));
     }
 
@@ -80,31 +80,31 @@ public class ObjectRegistries<T> implements Supplier<T> {
      * Creating a custom Item with the Id and the supplier for the Item Properties
      * */
 
-    public static <T extends Item> ObjectRegistries<T> registerItem(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends Item> ObjectRegistries<T> registerItem(Identifier id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, supplier);
     }
 
-    public static ObjectRegistries<CreativeModeTab> registerCreativeTab(ResourceLocation id, Supplier<CreativeModeTab> supplier) {
+    public static ObjectRegistries<CreativeModeTab> registerCreativeTab(Identifier id, Supplier<CreativeModeTab> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.CREATIVE_MODE_TAB, id, supplier);
     }
 
-    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+    public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(Identifier id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
         return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
     }
 
-    public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(Identifier id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ENTITY_TYPE, id, supplier);
     }
 
-    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenu(ResourceLocation id, BiFunction<Integer, Inventory, T> function) {
+    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenu(Identifier id, BiFunction<Integer, Inventory, T> function) {
         return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenu(function));
     }
 
-    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenuData(ResourceLocation id, TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
+    public static <T extends AbstractContainerMenu> ObjectRegistries<MenuType<T>> registerMenuData(Identifier id, TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
         return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenuData(function));
     }
 
-    public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(ResourceLocation id) {
+    public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(Identifier id) {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_TYPE, id, ()-> new RecipeType<>() {
             @Override
             public String toString() {
@@ -113,23 +113,23 @@ public class ObjectRegistries<T> implements Supplier<T> {
         });
     }
 
-    public static <T extends RecipeSerializer<?>> ObjectRegistries<T> registerRecipeSerializer(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends RecipeSerializer<?>> ObjectRegistries<T> registerRecipeSerializer(Identifier id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_SERIALIZER, id, supplier);
     }
 
-    public static ObjectRegistries<SoundEvent> registerSound(ResourceLocation id, Supplier<SoundEvent> supplier) {
+    public static ObjectRegistries<SoundEvent> registerSound(Identifier id, Supplier<SoundEvent> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier);
     }
 
-    public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier){
+    public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, Identifier id, Supplier<T> supplier){
         return new ObjectRegistries<>(registry, id, supplier);
     }
 
-    public static <T extends DataComponentType<?>> ObjectRegistries<T> registerEnchantmentComponentEffect(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends DataComponentType<?>> ObjectRegistries<T> registerEnchantmentComponentEffect(Identifier id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, id, supplier);
     }
 
-    public static <T extends MapCodec<EnchantmentEntityEffect>> ObjectRegistries<T> registerEnchantmentEffect(ResourceLocation id, Supplier<T> supplier) {
+    public static <T extends MapCodec<EnchantmentEntityEffect>> ObjectRegistries<T> registerEnchantmentEffect(Identifier id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE, id, supplier);
     }
 

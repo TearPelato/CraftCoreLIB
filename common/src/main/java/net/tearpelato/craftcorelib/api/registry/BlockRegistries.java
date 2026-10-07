@@ -2,7 +2,7 @@ package net.tearpelato.craftcorelib.api.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 
@@ -14,7 +14,7 @@ public class BlockRegistries<T extends Block, E extends BlockItem> extends Objec
     protected final Function<T, E> function;
     protected E intance;
 
-    public BlockRegistries(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier, Function<T, E> function) {
+    public BlockRegistries(Registry<? super T> registry, Identifier id, Supplier<T> supplier, Function<T, E> function) {
         super(registry, id, supplier);
         this.function = function;
     }

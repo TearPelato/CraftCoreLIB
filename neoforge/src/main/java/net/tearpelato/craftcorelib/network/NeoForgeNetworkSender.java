@@ -8,7 +8,7 @@ import net.tearpelato.craftcorelib.api.network.Network;
 public class NeoForgeNetworkSender implements Network.Sender{
     @Override
     public void sendToServer(CustomPacketPayload payload) {
-        PacketDistributor.sendToServer(payload);
+        PacketDistributor.sendToAllPlayers(payload);
     }
 
     @Override

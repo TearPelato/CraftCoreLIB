@@ -1,8 +1,8 @@
 package net.tearpelato.craftcorelib.platform;
 
 import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -44,7 +44,7 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos) {
-        player.openMenu(new ExtendedScreenHandlerFactory<BlockPos>() {
+        player.openMenu(new ExtendedMenuProvider<BlockPos>() {
             @Override
             public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
                 return provider.createMenu(i, inventory, player);

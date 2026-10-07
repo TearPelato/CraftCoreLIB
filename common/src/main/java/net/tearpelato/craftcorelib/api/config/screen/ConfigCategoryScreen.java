@@ -1,10 +1,11 @@
 package net.tearpelato.craftcorelib.api.config.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
@@ -33,7 +34,7 @@ public class ConfigCategoryScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        
+
         List<ConfigCategory> children = this.category.getChildren();
 
         this.list = new CategoryList(this.minecraft, this.width - 40, this.height - 70, 40, 28);
@@ -53,17 +54,18 @@ public class ConfigCategoryScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        graphics.centeredText(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractBackground(graphics, mouseX, mouseY, a);
         if (this.minecraft.level == null) {
-            this.renderPanorama(graphics, partialTick);
+            this.extractPanorama(graphics, a);
         } else {
-            this.renderTransparentBackground(graphics);
+            this.extractTransparentBackground(graphics);
         }
     }
 
@@ -109,18 +111,16 @@ public class ConfigCategoryScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics g, int index, int top, int left, int width, int height,
-                           int mouseX, int mouseY, boolean hovering, float partialTick) {
+        public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
+            int bgColor = b ? 0x80FFFFFF : 0x40000000;
+            guiGraphicsExtractor.fill(i - 2, i1 - 1, i + width + 2, i1 + height + 1, bgColor);
 
-            int bgColor = hovering ? 0x80FFFFFF : 0x40000000;
-            g.fill(left - 2, top - 1, left + width + 2, top + height + 1, bgColor);
-
-            g.drawString(ConfigCategoryScreen.this.font, "📁  " + this.displayName,
-                    left + 8, top + 8, 0xFFFFFFFF, true);
+            guiGraphicsExtractor.text(ConfigCategoryScreen.this.font, "📁  " + this.displayName,
+                    i + 8, i1 + 8, 0xFFFFFFFF, true);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
             ConfigCategoryScreen.this.minecraft.setScreen(
                     new ConfigValuesScreen(ConfigCategoryScreen.this, ConfigCategoryScreen.this.modId,
                             ConfigCategoryScreen.this.type, this.category));

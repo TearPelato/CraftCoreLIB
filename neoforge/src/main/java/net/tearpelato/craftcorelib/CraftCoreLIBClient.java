@@ -3,7 +3,6 @@ package net.tearpelato.craftcorelib;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
@@ -21,8 +20,8 @@ public class CraftCoreLIBClient {
     }
 
     @SubscribeEvent
-    public static void onContainerRender(ContainerScreenEvent.Render.Background event) {
-        ScreenRenderEvent.ON_RENDER_BACKGROUND.post().render(event.getContainerScreen(), event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+    public static void onContainerRender(ScreenEvent.Render.Background event) {
+        ScreenRenderEvent.ON_RENDER_BACKGROUND.post().render(event.getScreen(), event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
     }
 
     @SubscribeEvent

@@ -2,13 +2,8 @@ package net.tearpelato.craftcorelib.platform;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
 import net.tearpelato.craftcorelib.api.config.ConfigType;
 import net.tearpelato.craftcorelib.api.config.ConfigValue;
@@ -17,8 +12,10 @@ import net.tearpelato.craftcorelib.api.config.util.ExternalConfigScanner;
 import net.tearpelato.craftcorelib.platform.services.IConfigHelper;
 
 import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Function;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FabricConfigHelper implements IConfigHelper {
 
@@ -49,13 +46,6 @@ public class FabricConfigHelper implements IConfigHelper {
     @Override
     public void scanExternalConfigs() {
         ExternalConfigScanner.scan(FabricLoader.getInstance().getConfigDir());
-    }
-
-    private static void addIfUseful(Map<String, Function<Screen, Screen>> map, String id,
-                                    ConfigScreenFactory<?> f, Screen probe) {
-        if (f != null && f.create(probe) != null) {
-            map.put(id, f::create);
-        }
     }
 
     private void registerType(String modId, ConfigType type, List<ConfigCategory> categories) {

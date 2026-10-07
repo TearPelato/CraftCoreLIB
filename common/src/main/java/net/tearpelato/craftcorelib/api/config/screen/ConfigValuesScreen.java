@@ -1,13 +1,16 @@
 package net.tearpelato.craftcorelib.api.config.screen;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.tearpelato.craftcorelib.api.config.ConfigCategory;
@@ -157,37 +160,37 @@ public class ConfigValuesScreen extends Screen {
         this.activeEditBox = box;
         if (box != null) box.setFocused(true);
     }
-
+    
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
         if (this.activeEditBox != null && this.getFocused() == this.list
-                && this.activeEditBox.keyPressed(keyCode, scanCode, modifiers)) {
+                && this.activeEditBox.keyPressed(event)) {
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char codePoint, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
         if (this.activeEditBox != null && this.getFocused() == this.list
-                && this.activeEditBox.charTyped(codePoint, modifiers)) {
+                && this.activeEditBox.charTyped(event)) {
             return true;
         }
-        return super.charTyped(codePoint, modifiers);
+        return super.charTyped(event);
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        graphics.centeredText(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
     }
 
     @Override
-    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         if (this.minecraft.level == null) {
-            this.renderPanorama(graphics, partialTick);
+            this.extractPanorama(graphics, a);
         } else {
-            this.renderTransparentBackground(graphics);
+            this.extractTransparentBackground(graphics);
         }
     }
 
@@ -359,9 +362,20 @@ public class ConfigValuesScreen extends Screen {
                 }
 
                 if (showBox) {
-                    this.editBox = new EditBox(ConfigValuesScreen.this.font, 0, 0, 70, 18, Component.empty());
+                    this.editBox = new EditBox(ConfigValuesScreen.this.font, 0, 0, 70, 18, Component.empty()){
+                        @Override
+                        public void insertText(String input) {
+                            String old = getValue();
+                            int cursor = getCursorPosition();
+                            super.insertText(input);
+                            if (!getValue().matches("-?\\d*\\.?\\d*")) {
+                                setValue(old);
+                                setCursorPosition(cursor);
+                                setHighlightPos(cursor);
+                            }
+                        }
+                    };
                     this.editBox.setValue(String.valueOf(current));
-                    this.editBox.setFilter(s -> s.matches("-?\\d*\\.?\\d*") || s.isEmpty());
                     this.editBox.setResponder(text -> {
                         if (text.isEmpty()) {
                             this.outOfRange = false;
@@ -458,9 +472,7 @@ public class ConfigValuesScreen extends Screen {
         }
 
         @Override
-        public void render(GuiGraphics g, int index, int top, int left, int width, int height,
-                           int mouseX, int mouseY, boolean hovering, float partialTick) {
-
+        public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
             String nameKey = this.value.getNameKey();
             Component name;
             if (nameKey != null) {
@@ -474,80 +486,81 @@ public class ConfigValuesScreen extends Screen {
                 name = Component.literal(ConfigBinder.toTitleCase(this.value.getKey()));
             }
 
-            g.drawString(ConfigValuesScreen.this.font, name, left + 4, top + 6, 0xFFFFFFFF, true);
+            guiGraphicsExtractor.text(ConfigValuesScreen.this.font, name, i + 4, i1 + 6, 0xFFFFFFFF, true);
 
             if (this.unavailable) {
-                g.drawString(ConfigValuesScreen.this.font,
+                guiGraphicsExtractor.text(ConfigValuesScreen.this.font,
                         Component.translatable("gui.craftcorelib.config.unavailable"),
-                        left + width - 130, top + 6, 0xFF888888, false);
+                        i + width - 130, i1 + 6, 0xFF888888, false);
                 return;
             }
 
-            int right = left + width;
+            int right = i + width;
 
             if (this.slider != null) {
                 this.slider.setX(right - 180);
-                this.slider.setY(top + 3);
-                this.slider.render(g, mouseX, mouseY, partialTick);
+                this.slider.setY(i1 + 3);
+                this.slider.extractRenderState(guiGraphicsExtractor, i, i1, v);
             }
 
             if (this.editBox != null) {
                 int boxX = this.slider != null ? right - 70 : right - 90;
                 this.editBox.setX(boxX);
-                this.editBox.setY(top + 3);
-                this.editBox.render(g, mouseX, mouseY, partialTick);
+                this.editBox.setY(i1 + 3);
+                this.editBox.extractRenderState(guiGraphicsExtractor, i, i1, v);
 
                 if (this.outOfRange) {
                     int warnX = boxX - 16;
-                    int warnY = top + 5;
-                    g.drawString(ConfigValuesScreen.this.font, "⚠", warnX, warnY, 0xFFFFAA00, true);
+                    int warnY = i1 + 5;
+                    guiGraphicsExtractor.text(ConfigValuesScreen.this.font, "⚠", warnX, warnY, 0xFFFFAA00, true);
 
-                    if (mouseX >= warnX && mouseX <= warnX + 12
-                            && mouseY >= warnY && mouseY <= warnY + 10
+                    if (i >= warnX && i <= warnX + 12
+                            && i1 >= warnY && i1 <= warnY + 10
                             && this.lastParsedOutOfRange != null) {
-                        g.renderTooltip(
+                        guiGraphicsExtractor.setTooltipForNextFrame(
                                 ConfigValuesScreen.this.font,
                                 ConfigValuesScreen.rangeWarningTooltip(this.lastParsedOutOfRange, this.value),
-                                mouseX, mouseY
+                                i, i1
                         );
                     }
                 }
             } else if (this.toggleButton != null) {
                 this.toggleButton.setX(right - 60);
-                this.toggleButton.setY(top + 3);
-                this.toggleButton.render(g, mouseX, mouseY, partialTick);
+                this.toggleButton.setY(i1 + 3);
+                this.toggleButton.extractRenderState(guiGraphicsExtractor, i, i1, v);
             }
         }
 
+
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (this.slider != null && this.slider.mouseClicked(mouseX, mouseY, button)) {
+        public boolean mouseClicked(MouseButtonEvent event, boolean clicked) {
+            if (this.slider != null && this.slider.mouseClicked(event, clicked)) {
                 return true;
             }
-            if (this.editBox != null && this.editBox.mouseClicked(mouseX, mouseY, button)) {
+            if (this.editBox != null && this.editBox.mouseClicked(event, clicked)) {
                 ConfigValuesScreen.this.focusEditBox(this.editBox);
                 return true;
             }
-            if (this.toggleButton != null && this.toggleButton.mouseClicked(mouseX, mouseY, button)) {
+            if (this.toggleButton != null && this.toggleButton.mouseClicked(event, clicked)) {
                 return true;
             }
             return false;
         }
 
         @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-            if (this.slider != null && this.slider.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+        public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+            if (this.slider != null && this.slider.mouseDragged(event, dragX, dragY)) {
                 return true;
             }
-            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+            return super.mouseDragged(event, dragX, dragY);
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            if (this.slider != null && this.slider.mouseReleased(mouseX, mouseY, button)) {
+        public boolean mouseReleased(MouseButtonEvent event) {
+            if (this.slider != null && this.slider.mouseReleased(event)) {
                 return true;
             }
-            return super.mouseReleased(mouseX, mouseY, button);
+            return super.mouseReleased(event);
         }
 
         @Override
