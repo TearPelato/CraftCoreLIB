@@ -106,8 +106,8 @@ public class NeoForgeConfigHelper implements IConfigHelper {
     private static ModConfig.Type toModConfigType(ConfigType type) {
         return switch (type) {
             case CLIENT -> ModConfig.Type.CLIENT;
-            case SERVER -> ModConfig.Type.SERVER;
-            case COMMON -> ModConfig.Type.COMMON;
+            case SERVER -> ModConfig.Type.SYNCED;
+            case COMMON -> ModConfig.Type.LOCAL;
         };
     }
 
