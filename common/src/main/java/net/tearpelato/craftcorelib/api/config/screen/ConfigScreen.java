@@ -132,14 +132,14 @@ public class ConfigScreen extends Screen {
     @Override
     public void onClose() {
         if (!this.dirty.isEmpty()) {
-            this.minecraft.setScreen(new ConfirmScreen(
+            this.minecraft.gui.setScreen(new ConfirmScreen(
                     confirmed -> {
                         if (confirmed) {
                             saveChanges();
                         } else {
                             revertChanges();
                         }
-                        this.minecraft.setScreen(this.parent);
+                        this.minecraft.gui.setScreen(this.parent);
                     },
                     Component.translatable("gui.craftcorelib.config.unsaved_title"),
                     Component.translatable("gui.craftcorelib.config.unsaved_message"),
@@ -148,7 +148,7 @@ public class ConfigScreen extends Screen {
             ));
             return;
         }
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @SuppressWarnings("unchecked")
@@ -306,7 +306,7 @@ public class ConfigScreen extends Screen {
     }
 
     private void openTypeScreen(ConfigType type) {
-        this.minecraft.setScreen(new ConfigTypeScreen(this, this.selectedModId, type));
+        this.minecraft.gui.setScreen(new ConfigTypeScreen(this, this.selectedModId, type));
     }
 
     private void focusConfigEditBox(EditBox box) {

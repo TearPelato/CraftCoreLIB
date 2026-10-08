@@ -42,7 +42,7 @@ public class TitleScreenMixin {
         this.craftcorelib$configButton = new ImageButton(
                 x, by, buttonSize, buttonSize,
                 sprites,
-                button -> Minecraft.getInstance().setScreen(new ConfigScreen(self)),
+                button -> Minecraft.getInstance().gui.setScreen(new ConfigScreen(self)),
                 Component.translatable("gui.craftcorelib.config.title")
         );
 

@@ -77,14 +77,14 @@ public class ConfigValuesScreen extends Screen {
     @Override
     public void onClose() {
         if (!this.dirty.isEmpty()) {
-            this.minecraft.setScreen(new ConfirmScreen(
+            this.minecraft.gui.setScreen(new ConfirmScreen(
                     confirmed -> {
                         if (confirmed) {
                             saveChanges();
                         } else {
                             revertChanges();
                         }
-                        this.minecraft.setScreen(this.parent);
+                        this.minecraft.gui.setScreen(this.parent);
                     },
                     Component.translatable("gui.craftcorelib.config.unsaved_title"),
                     Component.translatable("gui.craftcorelib.config.unsaved_message"),
@@ -93,7 +93,7 @@ public class ConfigValuesScreen extends Screen {
             ));
             return;
         }
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @SuppressWarnings("unchecked")

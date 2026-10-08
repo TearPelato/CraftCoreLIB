@@ -44,7 +44,7 @@ public abstract class PauseScreenMixin extends Screen {
         this.craftcorelib$configButton = new ImageButton(
                 x, by, buttonSize, buttonSize,
                 sprites,
-                button -> Minecraft.getInstance().setScreen(new ConfigScreen(this)),
+                button -> Minecraft.getInstance().gui.setScreen(new ConfigScreen(this)),
                 Component.translatable("gui.craftcorelib.config.title")
         );
 

@@ -49,7 +49,7 @@ public class ConfigTypeScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     @Override
@@ -126,14 +126,14 @@ public class ConfigTypeScreen extends Screen {
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean clicked) {
             if (this.category.hasChildren()) {
-                ConfigTypeScreen.this.minecraft.setScreen(
+                ConfigTypeScreen.this.minecraft.gui.setScreen(
                         new ConfigCategoryScreen(
                                 ConfigTypeScreen.this,
                                 ConfigTypeScreen.this.modId,
                                 ConfigTypeScreen.this.type,
                                 this.category));
             } else {
-                ConfigTypeScreen.this.minecraft.setScreen(
+                ConfigTypeScreen.this.minecraft.gui.setScreen(
                         new ConfigValuesScreen(
                                 ConfigTypeScreen.this,
                                 ConfigTypeScreen.this.modId,
