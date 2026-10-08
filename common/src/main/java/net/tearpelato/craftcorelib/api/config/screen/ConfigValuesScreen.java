@@ -472,62 +472,60 @@ public class ConfigValuesScreen extends Screen {
         }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
+        public void extractContent(GuiGraphicsExtractor g, int mouseX, int mouseY, boolean hovered, float partialTick) {
+            int x = getContentX();
+            int y = getContentY();
+            int w = getContentWidth();
+            int right = x + w;
+
             String nameKey = this.value.getNameKey();
             Component name;
             if (nameKey != null) {
                 String translated = Component.translatable(nameKey).getString();
-                if (!translated.equals(nameKey)) {
-                    name = Component.literal(translated);
-                } else {
-                    name = Component.literal(ConfigBinder.toTitleCase(this.value.getKey()));
-                }
+                name = Component.literal(!translated.equals(nameKey)
+                        ? translated : ConfigBinder.toTitleCase(this.value.getKey()));
             } else {
                 name = Component.literal(ConfigBinder.toTitleCase(this.value.getKey()));
             }
-
-            guiGraphicsExtractor.text(ConfigValuesScreen.this.font, name, i + 4, i1 + 6, 0xFFFFFFFF, true);
+            g.text(ConfigValuesScreen.this.font, name, x + 4, y + 6, 0xFFFFFFFF, true);
 
             if (this.unavailable) {
-                guiGraphicsExtractor.text(ConfigValuesScreen.this.font,
+                g.text(ConfigValuesScreen.this.font,
                         Component.translatable("gui.craftcorelib.config.unavailable"),
-                        i + width - 130, i1 + 6, 0xFF888888, false);
+                        right - 130, y + 6, 0xFF888888, false);
                 return;
             }
 
-            int right = i + width;
-
             if (this.slider != null) {
                 this.slider.setX(right - 180);
-                this.slider.setY(i1 + 3);
-                this.slider.extractRenderState(guiGraphicsExtractor, i, i1, v);
+                this.slider.setY(y + 3);
+                this.slider.extractRenderState(g, mouseX, mouseY, partialTick);
             }
 
             if (this.editBox != null) {
                 int boxX = this.slider != null ? right - 70 : right - 90;
                 this.editBox.setX(boxX);
-                this.editBox.setY(i1 + 3);
-                this.editBox.extractRenderState(guiGraphicsExtractor, i, i1, v);
+                this.editBox.setY(y + 3);
+                this.editBox.extractRenderState(g, mouseX, mouseY, partialTick);
 
                 if (this.outOfRange) {
                     int warnX = boxX - 16;
-                    int warnY = i1 + 5;
-                    guiGraphicsExtractor.text(ConfigValuesScreen.this.font, "⚠", warnX, warnY, 0xFFFFAA00, true);
+                    int warnY = y + 5;
+                    g.text(ConfigValuesScreen.this.font, "!", warnX + 3, warnY, 0xFFFFAA00, true);
 
-                    if (i >= warnX && i <= warnX + 12
-                            && i1 >= warnY && i1 <= warnY + 10
+                    if (mouseX >= warnX && mouseX <= warnX + 12
+                            && mouseY >= warnY && mouseY <= warnY + 10
                             && this.lastParsedOutOfRange != null) {
-                        guiGraphicsExtractor.setTooltipForNextFrame(
+                        g.setTooltipForNextFrame(
                                 ConfigValuesScreen.this.font,
                                 ConfigValuesScreen.rangeWarningTooltip(this.lastParsedOutOfRange, this.value),
-                                i, i1
-                        );
+                                mouseX, mouseY);
                     }
                 }
             } else if (this.toggleButton != null) {
                 this.toggleButton.setX(right - 60);
-                this.toggleButton.setY(i1 + 3);
-                this.toggleButton.extractRenderState(guiGraphicsExtractor, i, i1, v);
+                this.toggleButton.setY(y + 3);
+                this.toggleButton.extractRenderState(g, mouseX, mouseY, partialTick);
             }
         }
 

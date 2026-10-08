@@ -34,7 +34,6 @@ neoForge {
 
 dependencies {
 
-    implementation "curse.maven:configured-457570:7276577"
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }

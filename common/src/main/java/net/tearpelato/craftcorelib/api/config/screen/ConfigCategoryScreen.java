@@ -111,12 +111,17 @@ public class ConfigCategoryScreen extends Screen {
         }
 
         @Override
-        public void extractContent(GuiGraphicsExtractor guiGraphicsExtractor, int i, int i1, boolean b, float v) {
-            int bgColor = b ? 0x80FFFFFF : 0x40000000;
-            guiGraphicsExtractor.fill(i - 2, i1 - 1, i + width + 2, i1 + height + 1, bgColor);
+        public void extractContent(GuiGraphicsExtractor g, int mouseX, int mouseY, boolean hovered, float partialTick) {
+            int x = getContentX();
+            int y = getContentY();
+            int w = getContentWidth();
+            int h = getContentHeight();
 
-            guiGraphicsExtractor.text(ConfigCategoryScreen.this.font, "📁  " + this.displayName,
-                    i + 8, i1 + 8, 0xFFFFFFFF, true);
+            int bgColor = hovered ? 0x80FFFFFF : 0x40000000;
+            g.fill(x - 2, y - 1, x + w + 2, y + h + 1, bgColor);
+
+            g.text(ConfigCategoryScreen.this.font, this.displayName,
+                    x + 8, y + (h - 8) / 2, 0xFFFFFFFF, true);
         }
 
         @Override
