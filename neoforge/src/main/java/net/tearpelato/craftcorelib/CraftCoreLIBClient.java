@@ -22,7 +22,8 @@ public class CraftCoreLIBClient {
 
     @SubscribeEvent
     public static void onContainerRender(ContainerScreenEvent.Render.Background event) {
-        ScreenRenderEvent.ON_RENDER_BACKGROUND.post().render(event.getContainerScreen(), event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+        ScreenRenderEvent.AFTER_RENDER_BACKGROUND.post().render(event.getContainerScreen(), event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+        ScreenRenderEvent.BEFORE_RENDER_BACKGROUND.post().render(event.getContainerScreen(), event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
     }
 
     @SubscribeEvent
