@@ -1,8 +1,9 @@
 package net.tearpelato.craftcorelib.platform;
 
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -37,14 +38,19 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
-        return new MenuType<>((id, inv)-> {
-            return function.apply(id, inv, new FriendlyByteBuf(Unpooled.buffer()));
-        }, FeatureFlags.DEFAULT_FLAGS);
+        return new ExtendedScreenHandlerType<T, BlockPos>(
+                (syncId, inventory, pos) -> {
+                    FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+                    buf.writeBlockPos(pos);
+                    return function.apply(syncId, inventory, buf);
+                },
+                BlockPos.STREAM_CODEC
+        );
     }
 
     @Override
     public void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos) {
-        player.openMenu(new ExtendedMenuProvider<BlockPos>() {
+        player.openMenu(new ExtendedScreenHandlerFactory<BlockPos>() {
             @Override
             public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
                 return provider.createMenu(i, inventory, player);
