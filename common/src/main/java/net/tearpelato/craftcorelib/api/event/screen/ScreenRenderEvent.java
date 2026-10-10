@@ -8,7 +8,8 @@ import net.tearpelato.craftcorelib.api.event.Event;
 public class ScreenRenderEvent {
 
     public static final Event<Init> INIT = new Event<>(Init.class);
-    public static final Event<BackgroundRender> ON_RENDER_BACKGROUND = new Event<>(BackgroundRender.class);
+    public static final Event<BackgroundRender> AFTER_RENDER_BACKGROUND = new Event<>(BackgroundRender.class);
+    public static final Event<BackgroundRender> BEFORE_RENDER_BACKGROUND = new Event<>(BackgroundRender.class);
     public static final Event<Scroll> SCROLL = new Event<>(Scroll.class);
     public static final Event<Close> ON_CLOSE = new Event<>(Close.class);
 

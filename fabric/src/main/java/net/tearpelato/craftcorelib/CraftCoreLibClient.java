@@ -4,8 +4,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.tearpelato.craftcorelib.api.event.screen.ScreenRenderEvent;
-import net.tearpelato.craftcorelib.api.network.NetworkBuilder;
-import net.tearpelato.craftcorelib.network.FabricNetworkRegistrar;
 
 public class CraftCoreLibClient implements ClientModInitializer {
 
@@ -18,8 +16,12 @@ public class CraftCoreLibClient implements ClientModInitializer {
 
         ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 
+            ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, partialTick) -> {
+                ScreenRenderEvent.AFTER_RENDER_BACKGROUND.post().render(screen1, graphics, mouseX, mouseY);
+            });
+
             ScreenEvents.beforeRender(screen).register((screen1, graphics, mouseX, mouseY, partialTick) -> {
-                ScreenRenderEvent.ON_RENDER_BACKGROUND.post().render(screen1, graphics, mouseX, mouseY);
+                ScreenRenderEvent.BEFORE_RENDER_BACKGROUND.post().render(screen1, graphics, mouseX, mouseY);
             });
 
             ScreenMouseEvents.beforeMouseScroll(screen).register((screen1, mouseX, mouseY, horizontalAmount, verticalAmount) -> {
