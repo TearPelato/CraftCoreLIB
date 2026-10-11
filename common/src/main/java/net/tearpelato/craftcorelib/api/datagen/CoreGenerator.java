@@ -42,7 +42,7 @@ public abstract class CoreGenerator {
             this.flatItem(item);
     }
 
-    private void register(Item item, ItemModel.Unbaked model)
+    public void register(Item item, ItemModel.Unbaked model)
     {
         this.context.items().put(item, new ClientItem(model, ClientItem.Properties.DEFAULT));
     }

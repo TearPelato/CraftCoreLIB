@@ -5,8 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,6 +24,7 @@ import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.tearpelato.craftcorelib.platform.Services;
 import org.apache.commons.lang3.function.TriFunction;
@@ -31,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ObjectRegistries<T> implements Supplier<T> {
@@ -72,16 +76,22 @@ public class ObjectRegistries<T> implements Supplier<T> {
      * Creating a custom block with proper Item, getting the Id, and the supplier function to define the Block Properties
      * */
 
-    public static <T extends Block> ObjectRegistries<T> registerBlock(Identifier id, Supplier<T> supplier) {
-        return new BlockRegistries<>(BuiltInRegistries.BLOCK, id, supplier, t -> new BlockItem(t, new Item.Properties()));
+    public static <T extends Block> ObjectRegistries<T> registerBlock(Identifier id, Function<BlockBehaviour.Properties, T> function) {
+        return new BlockRegistries<>(BuiltInRegistries.BLOCK, id, ()-> {
+                return function.apply(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id)));
+        },
+           t-> new BlockItem(t, new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, id))));
     }
 
     /**
      * Creating a custom Item with the Id and the supplier for the Item Properties
      * */
 
-    public static <T extends Item> ObjectRegistries<T> registerItem(Identifier id, Supplier<T> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, supplier);
+    public static <T extends Item> ObjectRegistries<T> registerItem(Identifier id, Function<Item.Properties, T> function, Supplier<Item.Properties> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()-> {
+            Item.Properties properties = supplier.get();
+            return function.apply(properties.setId(ResourceKey.create(Registries.ITEM, id)));
+        });
     }
 
     public static ObjectRegistries<CreativeModeTab> registerCreativeTab(Identifier id, Supplier<CreativeModeTab> supplier) {
