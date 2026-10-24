@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class CreativeModeInventoryScreenMixin {
 
     @Inject(method = "extractBackground", at = @At("TAIL"))
-    private void craftcore$afterBg(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
+    private void craftcore$afterBg(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         ScreenRenderEvent.AFTER_RENDER_BACKGROUND.post()
-                .render((Screen) (Object) this, graphics, mouseX, mouseY);
+                .render((Screen) (Object) this, graphics, mouseX, mouseY,partialTick);
     }
 }

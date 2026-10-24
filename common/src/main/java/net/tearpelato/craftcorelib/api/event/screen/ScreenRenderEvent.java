@@ -19,7 +19,7 @@ public class ScreenRenderEvent {
     }
 
     public interface BackgroundRender {
-        void render(Screen screen, GuiGraphicsExtractor graphics, int x, int y);
+        void render(Screen screen, GuiGraphicsExtractor graphics, int x, int y, float delta);
 
     }
 
