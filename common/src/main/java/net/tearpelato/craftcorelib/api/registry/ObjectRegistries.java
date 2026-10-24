@@ -93,6 +93,12 @@ public class ObjectRegistries<T> implements Supplier<T> {
            t-> new BlockItem(t, new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM, id))));
     }
 
+    public static <T extends Block> ObjectRegistries<T> registerBlockWithoutItem(Identifier id, Function<BlockBehaviour.Properties, T> function) {
+        return new BlockRegistries<>(BuiltInRegistries.BLOCK, id,()-> {
+            return function.apply(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, id)));
+        }, blockItem -> null);
+    }
+
     /**
      * Creating a custom Item with the Id and the supplier for the Item Properties
      * */
