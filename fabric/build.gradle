@@ -13,8 +13,10 @@ repositories {
         }
     }
     maven {
-        name = "Terraformers"
-        url = "https://maven.terraformersmc.com/"
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+    maven {
+        url = "https://maven.terraformersmc.com/releases/"
     }
 }
 
@@ -26,16 +28,16 @@ dependencies {
     }
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    modImplementation "curse.maven:configured-457570:7276575"
+   /* modImplementation "curse.maven:configured-457570:7276575"
     modImplementation "curse.maven:menulogue-682371:5705587"
-    modImplementation "curse.maven:catalogue-459701:6926812"
+    modImplementation "curse.maven:catalogue-459701:6926812"*/
 
     implementation "com.electronwill.night-config:core:3.6.7"
     implementation "com.electronwill.night-config:toml:3.6.7"
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
-    //modImplementation "com.terraformersmc:modmenu:${modmenu_version}"
+    modCompileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6"
     modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
 }
 
