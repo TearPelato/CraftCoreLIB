@@ -16,7 +16,8 @@ repositories {
         url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
     }
     maven {
-        url = "https://maven.terraformersmc.com/releases/"
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
     }
 }
 
@@ -37,8 +38,8 @@ dependencies {
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
-    modCompileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6"
-    modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
+    modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6"
+    modImplementation "curse.maven:modmenu-308702:8966434"
 }
 
 loom {

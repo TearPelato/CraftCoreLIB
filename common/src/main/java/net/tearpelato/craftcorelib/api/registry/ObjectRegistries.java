@@ -4,10 +4,13 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.stats.StatFormatter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,6 +26,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
+import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
+import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
+import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.tearpelato.craftcorelib.platform.Services;
 import org.apache.commons.lang3.function.TriFunction;
 
@@ -31,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ObjectRegistries<T> implements Supplier<T> {
@@ -41,6 +49,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
     protected final Supplier<T> supplier;
     protected final Registry<? super T> registry;
     private T instance;
+    private ResourceKey<? super T> key;
+
 
     public ObjectRegistries(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier) {
         this.id = id;
@@ -48,6 +58,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
         this.registry = registry;
         track(this);
     }
+
 
     private static void track(ObjectRegistries<?> entry) {
         ENTRIES.computeIfAbsent(entry.id.getNamespace(), k -> new ArrayList<>())
@@ -65,28 +76,58 @@ public class ObjectRegistries<T> implements Supplier<T> {
         if (this.instance != null)
             throw new IllegalStateException("Entry " + id + " has already been created");
         this.instance = Registry.register(this.registry, this.id, this.supplier.get());
+        this.key = ResourceKey.create(this.registry.key(), this.id);
         return this.instance;
     }
 
+    public ResourceKey<? super T> getKey() {
+        return this.key;
+    }
+
+    public ResourceLocation getId() {
+        return this.id;
+    }
+
+    protected void register() {}
+
     /**
-     * Creating a custom block with proper Item, getting the Id, and the supplier function to define the Block Properties
+     * Creating a custom block with proper Item, getting the id, and the supplier function to define the Block Properties
      * */
 
     public static <T extends Block> ObjectRegistries<T> registerBlock(ResourceLocation id, Supplier<T> supplier) {
         return new BlockRegistries<>(BuiltInRegistries.BLOCK, id, supplier, t -> new BlockItem(t, new Item.Properties()));
     }
 
-    /**
-     * Creating a custom Item with the Id and the supplier for the Item Properties
-     * */
 
+
+    /**
+     * Create a block without the Item definition
+     * */
+    public static <T extends Block> ObjectRegistries<T> registerBlockWithoutItem(ResourceLocation id, Supplier<T> supplier) {
+        return new BlockRegistries<>(BuiltInRegistries.BLOCK, id,supplier, blockItem-> null);
+    }
+
+    /**
+     * Creating a custom Item with the id and the supplier for the Item Properties
+     * */
     public static <T extends Item> ObjectRegistries<T> registerItem(ResourceLocation id, Supplier<T> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, supplier);
     }
 
+    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(ResourceLocation id, Supplier<T> block, Item.Properties properties) {
+        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()-> new BlockItem(block.get(), properties));
+    }
+
+    /**
+     * Creating a custom CreativeTab passing a supplier of {@link CreativeModeTab.Builder} defining all the parameters
+     * **/
     public static ObjectRegistries<CreativeModeTab> registerCreativeTab(ResourceLocation id, Supplier<CreativeModeTab> supplier) {
         return new ObjectRegistries<>(BuiltInRegistries.CREATIVE_MODE_TAB, id, supplier);
     }
+
+    /**
+     * Register a custom BlockEntity. Passing {@link Services#REGISTRIES#create()} for NeoForge/Fabric loader-side implementation
+     * */
 
     public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
         return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
@@ -104,6 +145,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MENU, id, ()-> Services.REGISTRIES.createMenuData(function));
     }
 
+    public static <T extends ParticleType<?>> ObjectRegistries<T> registerParticleType(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.PARTICLE_TYPE, id, supplier);
+    }
+
     public static <T extends Recipe<?>> ObjectRegistries<RecipeType<T>> registerRecipeType(ResourceLocation id) {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_TYPE, id, ()-> new RecipeType<>() {
             @Override
@@ -117,8 +162,12 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_SERIALIZER, id, supplier);
     }
 
-    public static ObjectRegistries<SoundEvent> registerSound(ResourceLocation id, Supplier<SoundEvent> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier);
+    public static ObjectRegistries<ResourceLocation> registerStat(ResourceLocation id, StatFormatter formatter) {
+        return new StatRegistry(BuiltInRegistries.CUSTOM_STAT, id, formatter);
+    }
+
+    public static <T extends SoundEvent> ObjectRegistries<T> registerSound(ResourceLocation id, Function<ResourceLocation, Supplier<T>> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier.apply(id));
     }
 
     public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, ResourceLocation id, Supplier<T> supplier){
@@ -133,7 +182,21 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE, id, supplier);
     }
 
+    public static <T extends TreeDecoratorType<?>> ObjectRegistries<T> registerTreeDecoratorType(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.TREE_DECORATOR_TYPE, id, supplier);
+    }
 
+    public static <T extends FoliagePlacerType<?>> ObjectRegistries<T> registerFoliagePlacer(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.FOLIAGE_PLACER_TYPE, id, supplier);
+    }
+
+    public static <T extends TrunkPlacerType<?>> ObjectRegistries<T> registerTrunkPlacer(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.TRUNK_PLACER_TYPE, id, supplier);
+    }
+
+    public static <T extends MapDecorationType> ObjectRegistries<T> registerMapDecoration(ResourceLocation id, Supplier<T> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.MAP_DECORATION_TYPE, id, supplier);
+    }
 
 
     //REGISTRATION HANDLER
