@@ -20,9 +20,8 @@ public class BlockRegistries<T extends Block, E extends BlockItem> extends Objec
     }
 
     @Override
-    protected T create() {
-        T instance = super.create();
+    protected void register() {
+        super.register();
         this.intance = Registry.register(BuiltInRegistries.ITEM, this.id, this.function.apply(instance));
-        return instance;
     }
 }
