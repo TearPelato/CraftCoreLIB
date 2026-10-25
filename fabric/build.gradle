@@ -1,6 +1,6 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.fabricmc.fabric-loom'
+    id 'fabric-loom'
 }
 
 repositories {
@@ -13,6 +13,9 @@ repositories {
         }
     }
     maven {
+        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
+    }
+    maven {
         name = "Terraformers"
         url = "https://maven.terraformersmc.com/"
     }
@@ -20,19 +23,23 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
- /* implementation "curse.maven:configured-457570:7276575"
-    implementation "curse.maven:menulogue-682371:5705587"
-    implementation "curse.maven:catalogue-459701:6926812"*/
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+   /* modImplementation "curse.maven:configured-457570:7276575"
+    modImplementation "curse.maven:menulogue-682371:5705587"
+    modImplementation "curse.maven:catalogue-459701:6926812"*/
 
     implementation "com.electronwill.night-config:core:3.6.7"
     implementation "com.electronwill.night-config:toml:3.6.7"
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
-    //implementation "com.terraformersmc:modmenu:${modmenu_version}"
-  //  modCompileOnly "com.terraformersmc:modmenu:${modmenu_version}"
+    modImplementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:21.1.6"
+    modImplementation "curse.maven:modmenu-308702:8966434"
 }
 
 loom {

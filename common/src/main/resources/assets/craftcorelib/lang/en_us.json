@@ -16,6 +16,7 @@
 
   "gui.craftcorelib.config.type.client": "Client Configs",
   "gui.craftcorelib.config.type.server": "Server Configs",
-  "gui.craftcorelib.config.type.common": "Common Configs"
+  "gui.craftcorelib.config.type.common": "Common Configs",
+  "config.craftcorelib.title": "Config Screen"
 
 }

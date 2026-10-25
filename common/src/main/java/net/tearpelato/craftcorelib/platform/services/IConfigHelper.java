@@ -1,13 +1,8 @@
 package net.tearpelato.craftcorelib.platform.services;
 
-import net.tearpelato.craftcorelib.api.config.ConfigCategory;
-import net.tearpelato.craftcorelib.api.config.ConfigType;
-
-import java.util.List;
+import net.tearpelato.craftcorelib.api.config.ConfigSpec;
 
 public interface IConfigHelper {
-    void register(String modId, List<ConfigCategory> categories);
+    void register(ConfigSpec spec);
 
-    void save(String modId, ConfigType type);
-    void scanExternalConfigs();
 }
