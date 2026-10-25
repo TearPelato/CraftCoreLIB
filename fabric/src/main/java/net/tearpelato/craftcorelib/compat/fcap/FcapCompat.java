@@ -1,6 +1,6 @@
 package net.tearpelato.craftcorelib.compat.fcap;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.tearpelato.craftcorelib.api.config.*;
@@ -32,7 +32,7 @@ public class FcapCompat {
             }
         }
 
-        NeoForgeConfigRegistry.INSTANCE.register(spec.modId(), toModConfigType(spec.type()), b.build());
+        ConfigRegistry.INSTANCE.register(spec.modId(), toModConfigType(spec.type()), b.build());
 
         if (client && SCREEN_REGISTERED.add(spec.modId())) {
             FcapClientCompat.registerScreen(spec.modId());
