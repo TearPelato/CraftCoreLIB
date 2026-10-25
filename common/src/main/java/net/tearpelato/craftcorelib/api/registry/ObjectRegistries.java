@@ -30,7 +30,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
-import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 import net.tearpelato.craftcorelib.platform.Services;
@@ -51,7 +50,9 @@ public class ObjectRegistries<T> implements Supplier<T> {
     protected final Identifier id;
     protected final Supplier<T> supplier;
     protected final Registry<? super T> registry;
+    private ResourceKey<? super T> key;
     public T instance;
+
 
     public ObjectRegistries(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
         this.id = id;
@@ -76,8 +77,17 @@ public class ObjectRegistries<T> implements Supplier<T> {
         if (this.instance != null)
             throw new IllegalStateException("Entry " + id + " has already been created");
         this.instance = Registry.register(this.registry, this.id, this.supplier.get());
+        this.key = ResourceKey.create(this.registry.key(), this.id);
         this.register();
         return this.instance;
+    }
+
+    public ResourceKey<? super T> getKey() {
+        return this.key;
+    }
+
+    public Identifier getId() {
+        return this.id;
     }
 
     protected void register() {}
@@ -108,6 +118,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
             Item.Properties properties = supplier.get();
             return function.apply(properties.setId(ResourceKey.create(Registries.ITEM, id)));
         });
+    }
+
+    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(Identifier id,Function<Item.Properties, T> function,  Supplier<T> block, Item.Properties properties) {
+        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()-> new BlockItem(block.get(), properties));
     }
 
     public static ObjectRegistries<CreativeModeTab> registerCreativeTab(Identifier id, Supplier<CreativeModeTab> supplier) {

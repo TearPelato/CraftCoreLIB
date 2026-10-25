@@ -28,25 +28,38 @@ Dedicated Config System built in to work perfectly on cross-platform:
 How To use:
 
 ```
-public class ModConfig {
+public class Configs {
 
-    //You can choose 3 different config types: CLIENT, SERVER,COMMON
-    public static final ConfigCategory MY_COOL_CATEGORY = ConfigCategory.create("my_cool_category", ConfigType.CLIENT)
-            .title("my_cool_category");
+    //Configs declarations -> all the configs you have must be declared here
+    public static final ConfigValue<Boolean> check;
+    public static final ConfigValue<Integer> integer;
 
+    //Config Builder -> Creating a new ConfigBuilder with you MODID with the target of configs: CLIENT,COMMON, SERVER
+    public static final ConfigBuilder BUILDER = new ConfigBuilder("mod_id", ConfigType.CLIENT);
+    
+    //Register -> with a static method, using the builder to register all the configs, configs categories and more
+    static {
+        //Method Start -> creating a category
+        BUILDER.start("category1");
+        //Defining the comment, the name and the type of the config, int, boolean, enum, long, string, even custom configs!!
+        check = BUILDER.comment("checker").defineBoolean("check", true);
+        //Method End -> closing a category
+        BUILDER.end();
 
-    public static final ConfigValue<Boolean> MY_CONDITION = MY_COOL_CATEGORY
-            .define("my_condition", false)
-            //Translatable Name -> define the name inside your localisation default en_su.json
-            .name("config.mymodid.mycondition")
-            //Translatable Description -> define the description inside your localisation default en_su.json
-            .comment("config.mymodid.mycondition.dec");
+        BUILDER.start("integer");
+        // Creating an Int config with a default value with the range
+        integer = BUILDER.defineInt("integer",5,0,10);
+        BUILDER.end();
 
-    // Accept countless categories
+    }
+
+    //Entrypoint initialization
     public static void init() {
-        ConfigManager.register("mymodid", MY_COOL_CATEGORY);
+        // Building categories with configs
+        BUILDER.build();
     }
 }
+
 
 
 ```
