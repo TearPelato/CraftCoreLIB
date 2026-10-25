@@ -32,8 +32,8 @@ dependencies {
     include "com.electronwill.night-config:core:3.6.7"
     include "com.electronwill.night-config:toml:3.6.7"
 
-    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.2.1"
-    implementation "curse.maven:modmenu-308702:8966634"
+    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:26.3.1"
+    implementation "curse.maven:modmenu-308702:8958984"
 }
 
 loom {
