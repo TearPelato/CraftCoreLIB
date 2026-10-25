@@ -3,109 +3,41 @@ package net.tearpelato.craftcorelib.api.config;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ConfigValue<T> {
-
-    private final String key;
+public final class ConfigValue<T> {
+    private final String path;
     private final T defaultValue;
-    private final ConfigCategory parent;
-    private String nameKey;
-    private String commentKey;
-    private T min, max;
-    private Supplier<T> getter;
-    private Consumer<T> setter;
-    private EditorType editorType = EditorType.AUTO;
+    private volatile Supplier<T> getter;
+    private volatile Consumer<T> setter;
+    private volatile Runnable saver;
 
-    public ConfigValue(ConfigCategory parent, String key, T defaultValue) {
-        this.parent = parent;
-        this.key = key;
+    ConfigValue(String path, T defaultValue) {
+        this.path = path;
         this.defaultValue = defaultValue;
     }
 
-    public ConfigValue<T> name(String translationKey) {
-        this.nameKey = translationKey;
-        return this;
-    }
-
-    public ConfigValue<T> comment(String translationKey) {
-        this.commentKey = translationKey;
-        return this;
-    }
-
-    public ConfigValue<T> range(T min, T max) {
-        this.min = min;
-        this.max = max;
-        return this;
-    }
-
-    public ConfigValue<T> box() {
-        this.editorType = EditorType.BOX;
-        return this;
-    }
-
-    public ConfigValue<T> slider() {
-        this.editorType = EditorType.SLIDER;
-        return this;
-    }
-
-    public ConfigValue<T> both() {
-        this.editorType = EditorType.BOTH;
-        return this;
-    }
-
-    public ConfigValue<T> auto() {
-        this.editorType = EditorType.AUTO;
-        return this;
-    }
-
     public T get() {
-        return getter != null ? getter.get() : defaultValue;
+        Supplier<T> g = getter;
+        if (g == null) throw new IllegalStateException("Config '" + path + "' is not registered yet");
+        return g.get();
     }
 
     public void set(T value) {
-        if (setter != null) setter.accept(value);
+        Consumer<T> s = setter;
+        if (s == null) throw new IllegalStateException("Config '" + path + "' is not registered yet");
+        s.accept(value);
     }
 
-    public void bind(Supplier<T> getter, Consumer<T> setter) {
+    public void save() {
+        Runnable s = saver;
+        if (s != null) s.run();
+    }
+
+    public T getDefault() { return defaultValue; }
+    public String getPath() { return path; }
+
+    public void bind(Supplier<T> getter, Consumer<T> setter, Runnable saver) {
         this.getter = getter;
         this.setter = setter;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public String getNameKey() {
-        return nameKey;
-    }
-
-    public T getDefault() {
-        return defaultValue;
-    }
-
-    public String getCommentKey() {
-        return commentKey;
-    }
-
-    public T getMin() {
-        return min;
-    }
-
-    public T getMax() {
-        return max;
-    }
-
-    public ConfigCategory getParent() {
-        return parent;
-    }
-
-    public EditorType getEditorType() {
-        return editorType;
-    }
-
-    public enum EditorType {
-        AUTO,
-        BOX,
-        SLIDER,
-        BOTH
+        this.saver = saver;
     }
 }

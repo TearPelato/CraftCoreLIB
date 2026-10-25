@@ -6,10 +6,7 @@
   "compatibilityLevel": "JAVA_18",
   "mixins": [],
   "client": [
-    "CreativeModeInventoryScreenMixin",
-    "PauseScreenMixin",
-    "ScreenAccessor",
-    "TitleScreenMixin"
+    "ScreenAccessor"
   ],
   "server": [],
   "injectors": {
