@@ -126,7 +126,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
     }
 
     /**
-     * Register a custom BlockEntity. Passing {@link Services#REGISTRIES#create()} for NeoForge/Fabric loader-side implementation
+     * Register a custom BlockEntity. Passing Services for NeoForge/Fabric loader-side implementation
      * */
 
     public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
