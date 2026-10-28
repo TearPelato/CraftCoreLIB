@@ -14,6 +14,4 @@ public interface IPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
-    Identifier getModIcon(String modId);
-    String getModName(String modId);
 }
