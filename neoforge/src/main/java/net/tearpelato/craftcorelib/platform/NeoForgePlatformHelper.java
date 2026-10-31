@@ -32,25 +32,4 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
         return !FMLLoader.getCurrent().isProduction();
     }
 
-    @Override
-    public String getModName(String modId) {
-        return ModList.get().getModContainerById(modId)
-                .map(container -> container.getModInfo().getDisplayName())
-                .orElse(modId);
-    }
-
-    @Override
-    public Identifier getModIcon(String modId) {
-        return ICONS.computeIfAbsent(modId, id -> ModList.get().getModContainerById(id)
-                .map(ModContainer::getModInfo)
-                .flatMap(info -> info.getLogoFile().map(logo -> {
-                    try (InputStream in = Files.newInputStream(info.getOwningFile().getFile().getFilePath())) {
-                        Identifier loc = Identifier.fromNamespaceAndPath("craftcorelib", "modicon/" + id);
-                        Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(()-> logo,NativeImage.read(in)));
-                        return loc;
-                    } catch (Exception e) {
-                        return null;
-                    }
-                })).orElse(null));
-    }
 }

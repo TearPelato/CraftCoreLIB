@@ -4,9 +4,13 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityDataRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,7 +31,7 @@ import java.util.function.Supplier;
 
 public class FabricRegistriesHelper implements IRegistriesHelper {
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+    public <T extends BlockEntity> BlockEntityType<T> createBlockEntity(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
         return FabricBlockEntityTypeBuilder.<T>create(factory::apply, blocks.get()).build();
     }
 
@@ -46,6 +50,16 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
                 },
                 BlockPos.STREAM_CODEC
         );
+    }
+
+    @Override
+    public <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer) {
+        FabricEntityDataRegistry.register(id,serializer);
+    }
+
+    @Override
+    public Registry<?> entityDataSerializerRegistry() {
+        return null;
     }
 
     @Override

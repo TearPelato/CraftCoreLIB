@@ -1,7 +1,5 @@
 package net.tearpelato.craftcorelib.platform.services;
 
-import net.minecraft.resources.Identifier;
-
 public interface IPlatformHelper {
 
     String getPlatformName();
@@ -14,6 +12,4 @@ public interface IPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
-    Identifier getModIcon(String modId);
-    String getModName(String modId);
 }

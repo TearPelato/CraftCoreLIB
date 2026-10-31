@@ -1,7 +1,10 @@
 package net.tearpelato.craftcorelib.platform.services;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,11 +21,14 @@ import java.util.function.Supplier;
 
 public interface IRegistriesHelper {
 
-    <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks);
+    <T extends BlockEntity> BlockEntityType<T> createBlockEntity(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks);
 
     <T extends AbstractContainerMenu> MenuType<T> createMenu(BiFunction<Integer, Inventory, T> function);
 
     <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf,T> function);
+
+    <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer);
+    Registry<?> entityDataSerializerRegistry();
 
     void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos);
 }

@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
@@ -92,6 +93,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
 
     protected void register() {}
 
+    protected boolean matches(Registry<?> r) {
+        return this.registry == r;
+    }
+
     /**
      * Creating a custom block with proper Item, getting the Id, and the supplier function to define the Block Properties
      * */
@@ -129,7 +134,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
     }
 
     public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(Identifier id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
-        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
+        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.createBlockEntity(factory, blocks));
     }
 
     public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(Identifier id, Supplier<T> supplier) {
@@ -165,8 +170,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new StatRegistry(BuiltInRegistries.CUSTOM_STAT, id, formatter);
     }
 
-    public static ObjectRegistries<SoundEvent> registerSound(Identifier id, Supplier<SoundEvent> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier);
+    public static ObjectRegistries<SoundEvent> registerSound(Identifier id, Function<Identifier, Supplier<SoundEvent>> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier.apply(id));
     }
 
     public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, Identifier id, Supplier<T> supplier){
@@ -197,6 +202,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MAP_DECORATION_TYPE, id, supplier);
     }
 
+    public static <T> ObjectRegistries<EntityDataSerializer<T>> registerEntityDataSerializer(Identifier id, Supplier<EntityDataSerializer<T>> supplier) {
+        return new EntityDataSerializersRegistry<>(id,supplier);
+    }
+
 
 
 
@@ -215,7 +224,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
         if (entries == null) return;
 
         entries.stream()
-                .filter(e -> e.registry == registry)
+                .filter(e -> e.matches(registry))
                 .forEach(ObjectRegistries::create);
     }
 }

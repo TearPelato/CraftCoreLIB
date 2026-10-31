@@ -1,5 +1,7 @@
 package net.tearpelato.craftcorelib.api.datagen;
 
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelOutput;
 import net.minecraft.client.data.models.blockstates.BlockModelDefinitionGenerator;
 import net.minecraft.client.data.models.model.*;
 import net.minecraft.client.renderer.item.ClientItem;
@@ -13,10 +15,29 @@ import java.util.Map;
 
 public abstract class CoreGenerator {
     protected final Context context;
+    protected final BlockModelGenerators blockModels;
 
     protected CoreGenerator(Context context)
     {
         this.context = context;
+        this.blockModels = new BlockModelGenerators(
+                generator -> context.blocks().put(generator.block(), generator),
+                new ItemModelOutput()
+                {
+                    @Override
+                    public void accept(Item item, ItemModel.Unbaked model, ClientItem.Properties properties)
+                    {
+                        context.items().put(item, new ClientItem(model, properties));
+                    }
+
+                    @Override
+                    public void copy(Item item, Item other)
+                    {
+                        context.items().put(other, context.items().get(item));
+                    }
+                },
+                context.models()::put
+        );
     }
 
     public abstract void generate();
@@ -41,6 +62,7 @@ public abstract class CoreGenerator {
         for(Item item : items)
             this.flatItem(item);
     }
+
 
     public void register(Item item, ItemModel.Unbaked model)
     {
