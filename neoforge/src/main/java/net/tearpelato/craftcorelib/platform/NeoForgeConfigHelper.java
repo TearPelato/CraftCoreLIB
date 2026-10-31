@@ -40,7 +40,7 @@ public class NeoForgeConfigHelper implements IConfigHelper {
 
         container.registerConfig(toModConfigType(spec.type()), b.build());
 
-        if (FMLEnvironment.dist == Dist.CLIENT && SCREEN_REGISTERED.add(spec.modId())) {
+        if (FMLEnvironment.getDist() == Dist.CLIENT && SCREEN_REGISTERED.add(spec.modId())) {
             NeoForgeClientConfig.registerScreen(container);
         }
     }

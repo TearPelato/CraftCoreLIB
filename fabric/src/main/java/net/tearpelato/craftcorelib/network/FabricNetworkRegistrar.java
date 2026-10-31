@@ -25,17 +25,17 @@ public class FabricNetworkRegistrar implements NetworkRegistrar {
     ) {
         switch (direction) {
             case C2S -> {
-                PayloadTypeRegistry.playC2S().register(type, codec);
+                PayloadTypeRegistry.serverboundPlay().register(type, codec);
                 ServerPlayNetworking.registerGlobalReceiver(type, (payload, context) ->
                         serverHandler.handle(payload, new FabricServerContext(context)));
             }
             case S2C -> {
-                PayloadTypeRegistry.playS2C().register(type, codec);
+                PayloadTypeRegistry.clientboundPlay().register(type, codec);
                 registerClientReceiver(type, clientHandler);
             }
             case BOTH -> {
-                PayloadTypeRegistry.playC2S().register(type, codec);
-                PayloadTypeRegistry.playS2C().register(type, codec);
+                PayloadTypeRegistry.serverboundPlay().register(type, codec);
+                PayloadTypeRegistry.clientboundPlay().register(type, codec);
 
                 ServerPlayNetworking.registerGlobalReceiver(type, (payload, context) ->
                         serverHandler.handle(payload, new FabricServerContext(context)));

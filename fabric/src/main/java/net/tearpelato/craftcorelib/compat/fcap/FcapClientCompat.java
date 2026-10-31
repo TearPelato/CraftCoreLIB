@@ -1,6 +1,6 @@
 package net.tearpelato.craftcorelib.compat.fcap;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 public class FcapClientCompat {

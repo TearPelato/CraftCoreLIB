@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.tearpelato.craftcorelib.platform.services.IPlatformHelper;
 
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public class FabricPlatformHelper implements IPlatformHelper {
 
-    private static final Map<String, ResourceLocation> ICONS = new HashMap<>();
+    private static final Map<String, Identifier> ICONS = new HashMap<>();
 
     @Override
     public String getPlatformName() {
@@ -33,32 +33,4 @@ public class FabricPlatformHelper implements IPlatformHelper {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 
-    @Override
-    public String getModName(String modId) {
-        return FabricLoader.getInstance().getModContainer(modId)
-                .map(container -> container.getMetadata().getName())
-                .orElse(modId);
-    }
-
-    @Override
-    public ResourceLocation getModIcon(String modId) {
-        return ICONS.computeIfAbsent(modId, id -> {
-            Optional<ModContainer> containerOpt = FabricLoader.getInstance().getModContainer(id);
-            if (containerOpt.isEmpty()) return null;
-
-            ModContainer container = containerOpt.get();
-            Optional<String> iconPath = container.getMetadata().getIconPath(32);
-            return iconPath.flatMap(s -> container.findPath(s)
-                    .map(path -> {
-                        try (InputStream in = Files.newInputStream(path)) {
-                            ResourceLocation loc = ResourceLocation.fromNamespaceAndPath("craftcorelib", "modicon/" + id);
-                            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(NativeImage.read(in)));
-                            return loc;
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    })).orElse(null);
-
-        });
-    }
 }
