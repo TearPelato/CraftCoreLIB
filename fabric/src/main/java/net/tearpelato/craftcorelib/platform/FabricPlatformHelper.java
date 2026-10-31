@@ -33,32 +33,4 @@ public class FabricPlatformHelper implements IPlatformHelper {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 
-    @Override
-    public String getModName(String modId) {
-        return FabricLoader.getInstance().getModContainer(modId)
-                .map(container -> container.getMetadata().getName())
-                .orElse(modId);
-    }
-
-    @Override
-    public Identifier getModIcon(String modId) {
-        return ICONS.computeIfAbsent(modId, id -> {
-            Optional<ModContainer> containerOpt = FabricLoader.getInstance().getModContainer(id);
-            if (containerOpt.isEmpty()) return null;
-
-            ModContainer container = containerOpt.get();
-            Optional<String> iconPath = container.getMetadata().getIconPath(32);
-            return iconPath.flatMap(s -> container.findPath(s)
-                    .map(path -> {
-                        try (InputStream in = Files.newInputStream(path)) {
-                            Identifier loc = Identifier.fromNamespaceAndPath("craftcorelib", "modicon/" + id);
-                            Minecraft.getInstance().getTextureManager().register(loc, new DynamicTexture(()-> s,NativeImage.read(in)));
-                            return loc;
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    })).orElse(null);
-
-        });
-    }
 }

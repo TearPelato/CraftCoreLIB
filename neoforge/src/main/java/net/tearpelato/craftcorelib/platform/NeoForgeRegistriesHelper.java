@@ -1,7 +1,10 @@
 package net.tearpelato.craftcorelib.platform;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataSerializer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,6 +16,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.tearpelato.craftcorelib.platform.services.IRegistriesHelper;
 import org.apache.commons.lang3.function.TriFunction;
 
@@ -22,7 +26,7 @@ import java.util.function.Supplier;
 public class NeoForgeRegistriesHelper implements IRegistriesHelper {
 
     @Override
-    public <T extends BlockEntity> BlockEntityType<T> create(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
+    public <T extends BlockEntity> BlockEntityType<T> createBlockEntity(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
         return new BlockEntityType<>(factory::apply, blocks.get());
     }
 
@@ -34,6 +38,16 @@ public class NeoForgeRegistriesHelper implements IRegistriesHelper {
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
         return IMenuTypeExtension.create(function::apply);
+    }
+
+    @Override
+    public <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer) {
+        Registry.register(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS,id,serializer);
+    }
+
+    @Override
+    public Registry<?> entityDataSerializerRegistry() {
+        return NeoForgeRegistries.ENTITY_DATA_SERIALIZERS;
     }
 
     @Override
