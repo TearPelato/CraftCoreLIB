@@ -48,7 +48,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
     protected final ResourceLocation id;
     protected final Supplier<T> supplier;
     protected final Registry<? super T> registry;
-    private T instance;
+    public T instance;
     private ResourceKey<? super T> key;
 
 
@@ -90,6 +90,10 @@ public class ObjectRegistries<T> implements Supplier<T> {
 
     protected void register() {}
 
+    protected boolean matches(Registry<?> registry) {
+        return this.registry == registry;
+    }
+
     /**
      * Creating a custom block with proper Item, getting the id, and the supplier function to define the Block Properties
      * */
@@ -130,7 +134,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
      * */
 
     public static <T extends BlockEntity> ObjectRegistries<BlockEntityType<T>> registerBlockEntity(ResourceLocation id, BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
-        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.create(factory, blocks));
+        return new ObjectRegistries<>(BuiltInRegistries.BLOCK_ENTITY_TYPE, id, ()-> Services.REGISTRIES.createBlockEntity(factory, blocks));
     }
 
     public static <T extends EntityType<?>> ObjectRegistries<T> registerEntity(ResourceLocation id, Supplier<T> supplier) {

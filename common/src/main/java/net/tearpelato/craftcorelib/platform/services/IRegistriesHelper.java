@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,7 +27,7 @@ public interface IRegistriesHelper {
 
     <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf,T> function);
 
-    <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer);
+    <T> void registerEntityDataSerializer(ResourceLocation id, EntityDataSerializer<T> serializer);
     Registry<?> entityDataSerializerRegistry();
 
     void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos);

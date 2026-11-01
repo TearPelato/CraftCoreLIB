@@ -1,7 +1,7 @@
 package net.tearpelato.craftcorelib.api.event.screen;
 
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.tearpelato.craftcorelib.api.event.Event;
 
@@ -19,7 +19,7 @@ public class ScreenRenderEvent {
     }
 
     public interface BackgroundRender {
-        void render(Screen screen, GuiGraphicsExtractor graphics, int x, int y, float delta);
+        void render(Screen screen, GuiGraphics graphics, int x, int y);
 
     }
 

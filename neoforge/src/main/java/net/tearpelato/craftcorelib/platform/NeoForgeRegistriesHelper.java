@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,8 +27,9 @@ public class NeoForgeRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public <T extends BlockEntity> BlockEntityType<T> createBlockEntity(BiFunction<BlockPos, BlockState, T> factory, Supplier<Block[]> blocks) {
-        return new BlockEntityType<>(factory::apply, blocks.get());
+        return BlockEntityType.Builder.<T>of(factory::apply, blocks.get()).build(null);
     }
+
 
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenu(BiFunction<Integer, Inventory, T> function) {
@@ -41,7 +42,7 @@ public class NeoForgeRegistriesHelper implements IRegistriesHelper {
     }
 
     @Override
-    public <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer) {
+    public <T> void registerEntityDataSerializer(ResourceLocation id, EntityDataSerializer<T> serializer) {
         Registry.register(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS,id,serializer);
     }
 

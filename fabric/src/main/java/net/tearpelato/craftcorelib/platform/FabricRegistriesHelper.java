@@ -1,16 +1,16 @@
 package net.tearpelato.craftcorelib.platform;
 
 import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityDataRegistry;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,6 +35,7 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
         return FabricBlockEntityTypeBuilder.<T>create(factory::apply, blocks.get()).build();
     }
 
+
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenu(BiFunction<Integer, Inventory, T> function) {
         return new MenuType<>(function::apply, FeatureFlags.DEFAULT_FLAGS);
@@ -42,7 +43,7 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public <T extends AbstractContainerMenu> MenuType<T> createMenuData(TriFunction<Integer, Inventory, FriendlyByteBuf, T> function) {
-        return new ExtendedMenuType<>(
+        return new ExtendedScreenHandlerType<T, BlockPos>(
                 (syncId, inventory, pos) -> {
                     FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
                     buf.writeBlockPos(pos);
@@ -53,8 +54,8 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
     }
 
     @Override
-    public <T> void registerEntityDataSerializer(Identifier id, EntityDataSerializer<T> serializer) {
-        FabricEntityDataRegistry.register(id,serializer);
+    public <T> void registerEntityDataSerializer(ResourceLocation id, EntityDataSerializer<T> serializer) {
+        EntityDataSerializers.registerSerializer(serializer);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class FabricRegistriesHelper implements IRegistriesHelper {
 
     @Override
     public void openMenuData(ServerPlayer player, MenuProvider provider, BlockPos pos) {
-        player.openMenu(new ExtendedMenuProvider<BlockPos>() {
+        player.openMenu(new ExtendedScreenHandlerFactory<BlockPos>() {
             @Override
             public @Nullable AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
                 return provider.createMenu(i, inventory, player);

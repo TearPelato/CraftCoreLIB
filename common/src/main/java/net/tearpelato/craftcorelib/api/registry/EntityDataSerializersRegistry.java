@@ -2,13 +2,13 @@ package net.tearpelato.craftcorelib.api.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.tearpelato.craftcorelib.platform.Services;
 
 import java.util.function.Supplier;
 
 public class EntityDataSerializersRegistry<T> extends ObjectRegistries<EntityDataSerializer<T>> {
-    public EntityDataSerializersRegistry(Identifier id, Supplier<EntityDataSerializer<T>> supplier) {
+    public EntityDataSerializersRegistry(ResourceLocation id, Supplier<EntityDataSerializer<T>> supplier) {
         super(null, id, supplier);
     }
     
