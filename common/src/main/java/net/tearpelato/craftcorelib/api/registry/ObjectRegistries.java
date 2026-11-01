@@ -165,8 +165,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new StatRegistry(BuiltInRegistries.CUSTOM_STAT, id, formatter);
     }
 
-    public static ObjectRegistries<SoundEvent> registerSound(Identifier id, Supplier<SoundEvent> supplier) {
-        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier);
+    public static ObjectRegistries<SoundEvent> registerSound(Identifier id, Function<Identifier,Supplier<SoundEvent>> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.SOUND_EVENT, id, supplier.apply(id));
     }
 
     public static <T> ObjectRegistries<T> registerCustom(Registry<? super T> registry, Identifier id, Supplier<T> supplier){
