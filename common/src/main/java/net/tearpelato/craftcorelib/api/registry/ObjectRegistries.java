@@ -125,8 +125,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         });
     }
 
-    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(Identifier id,Function<Item.Properties, T> function,  Supplier<T> block, Item.Properties properties) {
-        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()-> new BlockItem(block.get(), properties));
+    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(Identifier id, Supplier<T> block, BiFunction<T,Item.Properties, Item> function) {
+        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()->  function.apply(block.get(),new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM,id))));
     }
 
     public static ObjectRegistries<CreativeModeTab> registerCreativeTab(Identifier id, Supplier<CreativeModeTab> supplier) {
@@ -202,8 +202,16 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MAP_DECORATION_TYPE, id, supplier);
     }
 
+    public static ObjectRegistries<MapDecorationType> registerHolderMapDecoration(Identifier id, Supplier<MapDecorationType> supplier) {
+        return new HolderRegistry<>(BuiltInRegistries.MAP_DECORATION_TYPE, id,supplier);
+    }
+
     public static <T> ObjectRegistries<EntityDataSerializer<T>> registerEntityDataSerializer(Identifier id, Supplier<EntityDataSerializer<T>> supplier) {
         return new EntityDataSerializersRegistry<>(id,supplier);
+    }
+
+    public static <T> ObjectRegistries<T> registerHolder(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
+        return new HolderRegistry<>(registry, id, supplier);
     }
 
 
