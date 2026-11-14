@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatFormatter;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -75,13 +76,28 @@ public class ObjectRegistries<T> implements Supplier<T> {
     }
 
     protected T create() {
-        if (this.instance != null)
-            throw new IllegalStateException("Entry " + id + " has already been created");
-        this.instance = Registry.register(this.registry, this.id, this.supplier.get());
+        if (this.instance != null) {
+            throw new IllegalStateException(
+                    "Entry " + String.valueOf(this.id) + " has already been created"
+            );
+        }
+
         this.key = ResourceKey.create(this.registry.key(), this.id);
+        this.instance = this.registerEntry();
         this.register();
+
         return this.instance;
     }
+
+    protected T registerEntry() {
+        return (T) Registry.register(
+                this.registry,
+                this.id,
+                this.supplier.get()
+        );
+    }
+
+    protected void register() {}
 
     public ResourceKey<? super T> getKey() {
         return this.key;
@@ -90,8 +106,6 @@ public class ObjectRegistries<T> implements Supplier<T> {
     public Identifier getId() {
         return this.id;
     }
-
-    protected void register() {}
 
     protected boolean matches(Registry<?> r) {
         return this.registry == r;
@@ -166,7 +180,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_SERIALIZER, id, supplier);
     }
 
-    public static ObjectRegistries<Identifier> registerStat(Identifier id, StatFormatter formatter) {
+    public static StatRegistry registerStat(Identifier id, StatFormatter formatter) {
         return new StatRegistry(BuiltInRegistries.CUSTOM_STAT, id, formatter);
     }
 
@@ -202,7 +216,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MAP_DECORATION_TYPE, id, supplier);
     }
 
-    public static ObjectRegistries<MapDecorationType> registerHolderMapDecoration(Identifier id, Supplier<MapDecorationType> supplier) {
+    public static HolderRegistry<MapDecorationType> registerHolderMapDecoration(Identifier id, Supplier<MapDecorationType> supplier) {
         return new HolderRegistry<>(BuiltInRegistries.MAP_DECORATION_TYPE, id,supplier);
     }
 
@@ -210,8 +224,12 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new EntityDataSerializersRegistry<>(id,supplier);
     }
 
-    public static <T> ObjectRegistries<T> registerHolder(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
+    public static <T> HolderRegistry<T> registerHolder(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
         return new HolderRegistry<>(registry, id, supplier);
+    }
+
+    public static HolderRegistry<MobEffect> registerModEffect(Identifier id, Supplier<MobEffect> effect) {
+        return new HolderRegistry<>(BuiltInRegistries.MOB_EFFECT,id, effect);
     }
 
 

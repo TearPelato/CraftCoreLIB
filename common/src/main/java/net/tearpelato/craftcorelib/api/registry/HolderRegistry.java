@@ -14,13 +14,16 @@ public class HolderRegistry<T> extends ObjectRegistries<T> {
     }
 
     @Override
-    protected void register() {
-        this.holder = ((Registry<T>) this.registry).wrapAsHolder(this.instance);
+    protected T registerEntry() {
+        this.holder = Registry.registerForHolder(this.registry, this.id, this.supplier.get());
+        return this.holder.value();
     }
 
     public Holder<T> holder() {
-        if (this.holder == null)
-            throw new IllegalStateException("Entry " + id + " has not been created yet");
+        if (this.holder == null) {
+            throw new IllegalStateException("Holder for " + this.id + " has not been registered yet");
+        }
+
         return this.holder;
     }
 }
