@@ -2,6 +2,7 @@ package net.tearpelato.craftcorelib.api.registry;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
+import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatFormatter;
 import net.minecraft.stats.Stats;
 
@@ -17,6 +18,11 @@ public class StatRegistry extends ObjectRegistries<Identifier> {
     @Override
     protected void register() {
         super.register();
-        Stats.CUSTOM.get(this.id, this.formatter);
+        createStat();
     }
+
+    public Stat<Identifier> createStat() {
+        return Stats.CUSTOM.get(this.id, this.formatter);
+    }
+
 }

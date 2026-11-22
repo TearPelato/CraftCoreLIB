@@ -13,6 +13,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.StatFormatter;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -20,6 +21,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -29,6 +31,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
@@ -75,13 +79,28 @@ public class ObjectRegistries<T> implements Supplier<T> {
     }
 
     protected T create() {
-        if (this.instance != null)
-            throw new IllegalStateException("Entry " + id + " has already been created");
-        this.instance = Registry.register(this.registry, this.id, this.supplier.get());
+        if (this.instance != null) {
+            throw new IllegalStateException(
+                    "Entry " + String.valueOf(this.id) + " has already been created"
+            );
+        }
+
         this.key = ResourceKey.create(this.registry.key(), this.id);
+        this.instance = this.registerEntry();
         this.register();
+
         return this.instance;
     }
+
+    protected T registerEntry() {
+        return (T) Registry.register(
+                this.registry,
+                this.id,
+                this.supplier.get()
+        );
+    }
+
+    protected void register() {}
 
     public ResourceKey<? super T> getKey() {
         return this.key;
@@ -90,8 +109,6 @@ public class ObjectRegistries<T> implements Supplier<T> {
     public Identifier getId() {
         return this.id;
     }
-
-    protected void register() {}
 
     protected boolean matches(Registry<?> r) {
         return this.registry == r;
@@ -125,8 +142,8 @@ public class ObjectRegistries<T> implements Supplier<T> {
         });
     }
 
-    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(Identifier id,Function<Item.Properties, T> function,  Supplier<T> block, Item.Properties properties) {
-        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()-> new BlockItem(block.get(), properties));
+    public static <T extends Block> ObjectRegistries<Item> registerBlockItem(Identifier id, Supplier<T> block, BiFunction<T,Item.Properties, Item> function) {
+        return new ObjectRegistries<>(BuiltInRegistries.ITEM, id, ()->  function.apply(block.get(),new Item.Properties().useBlockDescriptionPrefix().setId(ResourceKey.create(Registries.ITEM,id))));
     }
 
     public static ObjectRegistries<CreativeModeTab> registerCreativeTab(Identifier id, Supplier<CreativeModeTab> supplier) {
@@ -166,7 +183,7 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.RECIPE_SERIALIZER, id, supplier);
     }
 
-    public static ObjectRegistries<Identifier> registerStat(Identifier id, StatFormatter formatter) {
+    public static StatRegistry registerStat(Identifier id, StatFormatter formatter) {
         return new StatRegistry(BuiltInRegistries.CUSTOM_STAT, id, formatter);
     }
 
@@ -202,11 +219,33 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new ObjectRegistries<>(BuiltInRegistries.MAP_DECORATION_TYPE, id, supplier);
     }
 
+    public static HolderRegistry<MapDecorationType> registerHolderMapDecoration(Identifier id, Supplier<MapDecorationType> supplier) {
+        return new HolderRegistry<>(BuiltInRegistries.MAP_DECORATION_TYPE, id,supplier);
+    }
+
     public static <T> ObjectRegistries<EntityDataSerializer<T>> registerEntityDataSerializer(Identifier id, Supplier<EntityDataSerializer<T>> supplier) {
         return new EntityDataSerializersRegistry<>(id,supplier);
     }
 
+    public static <T> HolderRegistry<T> registerHolder(Registry<? super T> registry, Identifier id, Supplier<T> supplier) {
+        return new HolderRegistry<>(registry, id, supplier);
+    }
 
+    public static HolderRegistry<MobEffect> registerModEffect(Identifier id, Supplier<MobEffect> effect) {
+        return new HolderRegistry<>(BuiltInRegistries.MOB_EFFECT,id, effect);
+    }
+
+    public static ObjectRegistries<Feature<?>> registerFeature(Identifier id, Supplier<Feature<?>> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.FEATURE,id,supplier);
+    }
+
+    public static ObjectRegistries<MapCodec<? extends SurfaceRules.ConditionSource>> registerMaterialCondition(Identifier id, MapCodec<? extends SurfaceRules.ConditionSource> codec) {
+        return new ObjectRegistries<>(BuiltInRegistries.MATERIAL_CONDITION,id,()->codec);
+    }
+
+    public static HolderRegistry<Potion> registerPotion(Identifier id, Supplier<Potion> supplier) {
+        return new HolderRegistry<>(BuiltInRegistries.POTION,id,supplier);
+    }
 
 
     //REGISTRATION HANDLER
