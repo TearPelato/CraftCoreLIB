@@ -21,6 +21,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -30,6 +31,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.SurfaceRules;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
@@ -232,7 +235,17 @@ public class ObjectRegistries<T> implements Supplier<T> {
         return new HolderRegistry<>(BuiltInRegistries.MOB_EFFECT,id, effect);
     }
 
+    public static ObjectRegistries<Feature<?>> registerFeature(Identifier id, Supplier<Feature<?>> supplier) {
+        return new ObjectRegistries<>(BuiltInRegistries.FEATURE,id,supplier);
+    }
 
+    public static ObjectRegistries<MapCodec<? extends SurfaceRules.ConditionSource>> registerMaterialCondition(Identifier id, MapCodec<? extends SurfaceRules.ConditionSource> codec) {
+        return new ObjectRegistries<>(BuiltInRegistries.MATERIAL_CONDITION,id,()->codec);
+    }
+
+    public static HolderRegistry<Potion> registerPotion(Identifier id, Supplier<Potion> supplier) {
+        return new HolderRegistry<>(BuiltInRegistries.POTION,id,supplier);
+    }
 
 
     //REGISTRATION HANDLER
